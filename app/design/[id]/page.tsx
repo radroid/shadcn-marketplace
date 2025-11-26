@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SaveStatus } from "@/components/editor/SaveStatusIndicator";
 
 export default function DesignPage() {
     const params = useParams();
@@ -33,6 +34,7 @@ export default function DesignPage() {
     const [publishName, setPublishName] = useState("");
     const [publishDesc, setPublishDesc] = useState("");
     const [publishCategory, setPublishCategory] = useState("Buttons");
+    const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 
     const handlePublish = async () => {
         try {
@@ -146,19 +148,26 @@ export default function DesignPage() {
                     // globalCss={component.globalCss} // TODO: Add globalCss support to userComponents schema if needed
                     dependencies={component.dependencies}
                     componentName={component.catalogComponentId || "component"}
-                    onChange={(files) => {
-                        // We'll implement this in ComponentEditor
-                        // Debounce save
-                        const componentPath = `/components/ui/${component.catalogComponentId || "component"}.tsx`;
-                        const promise = updateComponent({
-                            id,
-                            code: files[componentPath]?.code || component.code,
-                            previewCode: files["/Preview.tsx"]?.code || component.previewCode,
-                        });
+                    onChange={async (files) => {
+                        setSaveStatus('saving');
+                        try {
+                            const componentPath = `/components/ui/${component.catalogComponentId || "component"}.tsx`;
+                            await updateComponent({
+                                id,
+                                code: files[componentPath]?.code || component.code,
+                                previewCode: files["/Preview.tsx"]?.code || component.previewCode,
+                            });
+                            setSaveStatus('saved');
 
-                        // Optional: Toast on error only to avoid spam
-                        promise.catch(() => toast.error("Failed to save changes"));
+                            // Reset to idle after 2 seconds
+                            setTimeout(() => setSaveStatus('idle'), 2000);
+                        } catch (error) {
+                            console.error(error);
+                            setSaveStatus('error');
+                            toast.error("Failed to save changes");
+                        }
                     }}
+                    saveStatus={saveStatus}
                 />
             ) : (
                 <div className="flex h-full items-center justify-center">

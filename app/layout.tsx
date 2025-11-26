@@ -5,6 +5,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 import ConvexClientProvider from '@/components/ConvexClientProvider'
 import Header from '@/components/Header'
 import { Toaster } from 'sonner'
+import StoreUserEffect from '@/components/StoreUserEffect'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +32,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ClerkProvider>
           <ConvexClientProvider>
+            <StoreUserEffect />
             <Header />
             <main className="min-h-screen bg-background">
               {children}
