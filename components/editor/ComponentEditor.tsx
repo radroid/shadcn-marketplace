@@ -101,23 +101,23 @@ function MonacoEditorInternal({
   return (
     <SandpackStack style={{ height: "100%", margin: 0 }}>
       <div className="bg-muted/50 border-b border-border shrink-0">
-        <div className="flex items-center justify-between gap-2 px-4 py-3">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
+          <div className="flex items-center gap-2 min-w-0 shrink">
             {componentDisplayName && (
-              <h1 className="font-semibold">{componentDisplayName}</h1>
+              <h1 className="font-semibold truncate">{componentDisplayName}</h1>
             )}
             {componentDescription && (
-              <span className="text-xs text-muted-foreground">{componentDescription}</span>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">{componentDescription}</span>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            <div className="mr-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <div className="flex items-center gap-2">
               <ThemeSelector currentTheme={currentTheme} onThemeChange={onThemeChange} />
+              <SaveStatusIndicator status={saveStatus} />
             </div>
-            <SaveStatusIndicator status={saveStatus} />
             {!readOnly && (
-              <>
-                <div className="h-4 w-px bg-border mx-2" />
+              <div className="flex items-center gap-1">
+                <div className="h-4 w-px bg-border mx-1 hidden sm:block" />
                 <Button
                   variant="ghost"
                   size="icon"
@@ -139,14 +139,14 @@ function MonacoEditorInternal({
                 <Button
                   variant="default"
                   size="sm"
-                  className="h-7 px-3 ml-2"
+                  className="h-7 px-3 ml-1"
                   onClick={handleSave}
                   disabled={saveStatus === "saving"}
                 >
                   <Save className="h-3.5 w-3.5 mr-1.5" />
                   Save
                 </Button>
-              </>
+              </div>
             )}
           </div>
         </div>
