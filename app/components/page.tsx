@@ -18,20 +18,36 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
-import { Id } from "@/convex/_generated/dataModel";
+import { useState, useMemo } from "react";
+import { Id, Doc } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
+import { TrashPopup } from "@/components/TrashPopup";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Filter, SortAsc } from "lucide-react";
+
+type SortOption = "name-asc" | "name-desc" | "date-created-asc" | "date-created-desc" | "date-updated-asc" | "date-updated-desc";
+type FilterOption = "all" | "recent" | "oldest";
 
 export default function ComponentsPage() {
     const components = useQuery(api.components.listUserComponents);
+    const trashComponents = useQuery(api.components.listTrashComponents);
     const deleteComponent = useMutation(api.components.deleteUserComponent);
     const [deletingId, setDeletingId] = useState<Id<"userComponents"> | null>(null);
+    const [showTrash, setShowTrash] = useState(false);
+    const [sortBy, setSortBy] = useState<SortOption>("date-updated-desc");
+    const [filterBy, setFilterBy] = useState<FilterOption>("all");
 
     const handleDelete = async (id: Id<"userComponents">) => {
         try {
             setDeletingId(id);
             await deleteComponent({ id });
-            toast.success("Component moved to trash. It will be permanently deleted after 7 days.");
+            toast.success("Component moved to trash. Click the trash icon to view.");
             setDeletingId(null);
         } catch (error) {
             console.error("Failed to delete component:", error);
@@ -39,6 +55,50 @@ export default function ComponentsPage() {
             setDeletingId(null);
         }
     };
+
+    // Filter and sort components - must be called before any conditional returns
+    const filteredAndSortedComponents = useMemo(() => {
+        if (!components) return [];
+
+        let filtered = [...components];
+
+        // Apply filters
+        if (filterBy === "recent") {
+            const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+            filtered = filtered.filter(
+                (component) => component._creationTime >= sevenDaysAgo
+            );
+        } else if (filterBy === "oldest") {
+            const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+            filtered = filtered.filter(
+                (component) => component._creationTime <= thirtyDaysAgo
+            );
+        }
+
+        // Apply sorting
+        filtered.sort((a, b) => {
+            switch (sortBy) {
+                case "name-asc":
+                    return a.name.localeCompare(b.name);
+                case "name-desc":
+                    return b.name.localeCompare(a.name);
+                case "date-created-asc":
+                    return a._creationTime - b._creationTime;
+                case "date-created-desc":
+                    return b._creationTime - a._creationTime;
+                case "date-updated-asc":
+                    return a._creationTime - b._creationTime;
+                case "date-updated-desc":
+                    return b._creationTime - a._creationTime;
+                default:
+                    return 0;
+            }
+        });
+
+        return filtered;
+    }, [components, sortBy, filterBy]);
+
+    const trashCount = trashComponents?.length || 0;
 
     if (components === undefined) {
         return (
@@ -49,24 +109,85 @@ export default function ComponentsPage() {
     }
 
     return (
-        <div className="container mx-auto py-8 px-4">
+        <div className="container mx-auto py-8 px-4 relative min-h-[calc(100vh-64px)]">
             <div className="mb-8">
-                <h1 className="text-3xl font-bold tracking-tight">My Components</h1>
-                <p className="text-muted-foreground mt-2">
-                    Manage your customized components.
-                </p>
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight">My Components</h1>
+                        <p className="text-muted-foreground mt-2">
+                            Manage your customized components.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Filters and Sort */}
+                <div className="flex flex-wrap items-center gap-4 mt-6">
+                    <div className="flex items-center gap-2">
+                        <Filter className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Filter:</span>
+                        <Select value={filterBy} onValueChange={(value) => setFilterBy(value as FilterOption)}>
+                            <SelectTrigger className="w-[140px]">
+                                <SelectValue placeholder="All components" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All components</SelectItem>
+                                <SelectItem value="recent">Recent (7 days)</SelectItem>
+                                <SelectItem value="oldest">Older (30+ days)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <SortAsc className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Sort by:</span>
+                        <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Sort by" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                                <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                                <SelectItem value="date-created-desc">Newest first</SelectItem>
+                                <SelectItem value="date-created-asc">Oldest first</SelectItem>
+                                <SelectItem value="date-updated-desc">Recently updated</SelectItem>
+                                <SelectItem value="date-updated-asc">Least recently updated</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="text-sm text-muted-foreground ml-auto">
+                        {filteredAndSortedComponents.length} {filteredAndSortedComponents.length === 1 ? "component" : "components"}
+                    </div>
+                </div>
             </div>
 
-            {components.length === 0 ? (
+            {filteredAndSortedComponents.length === 0 ? (
                 <div className="text-center py-12 border rounded-lg bg-muted/10">
-                    <p className="text-muted-foreground">You haven&apos;t created any components yet.</p>
-                    <Link href="/">
-                        <Button>Browse Marketplace</Button>
-                    </Link>
+                    <p className="text-muted-foreground">
+                        {components?.length === 0
+                            ? "You haven't created any components yet."
+                            : "No components match your filters."}
+                    </p>
+                    {components?.length === 0 ? (
+                        <Link href="/">
+                            <Button className="mt-4">Browse Marketplace</Button>
+                        </Link>
+                    ) : (
+                        <Button
+                            variant="outline"
+                            className="mt-4"
+                            onClick={() => {
+                                setFilterBy("all");
+                                setSortBy("date-updated-desc");
+                            }}
+                        >
+                            Clear filters
+                        </Button>
+                    )}
                 </div>
             ) : (
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {components.map((component) => (
+                    {filteredAndSortedComponents.map((component: Doc<"userComponents">) => (
                         <Card key={component._id} className="flex flex-col">
                             <CardHeader>
                                 <CardTitle>{component.name}</CardTitle>
@@ -120,6 +241,23 @@ export default function ComponentsPage() {
                     ))}
                 </div>
             )}
+
+            {/* Floating Trash Button */}
+            {trashCount > 0 && (
+                <div className="fixed bottom-6 right-6 z-40">
+                    <button
+                        onClick={() => setShowTrash(true)}
+                        className="h-14 w-14 rounded-full bg-foreground text-background shadow-lg hover:scale-110 transition-transform flex items-center justify-center p-0 border-0 cursor-pointer relative"
+                    >
+                        <Trash2 className="h-6 w-6" />
+                        <span className="absolute top-0 right-0 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center translate-x-1/2 -translate-y-1/2 min-w-5">
+                            {trashCount > 9 ? "9+" : trashCount}
+                        </span>
+                    </button>
+                </div>
+            )}
+
+            <TrashPopup isVisible={showTrash} onClose={() => setShowTrash(false)} />
         </div>
     );
 }

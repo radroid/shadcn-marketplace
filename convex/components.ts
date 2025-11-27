@@ -118,12 +118,10 @@ export const listUserComponents = query({
             .withIndex("by_user", (q) => q.eq("userId", user._id))
             .collect();
         
-        // Filter out deleted components (or components deleted more than 7 days ago)
+        // Filter out ALL deleted components - they should only appear in trash
         // Using Date.now() here is fine - Convex tracks the documents we read, not the filter logic
-        const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-        
         return allComponents.filter(
-            (component) => !component.deletedAt || component.deletedAt > sevenDaysAgo
+            (component) => !component.deletedAt
         );
     },
 });
@@ -180,6 +178,62 @@ export const permanentlyDeleteUserComponent = internalMutation({
     },
 });
 
+export const listTrashComponents = query({
+    args: {},
+    handler: async (ctx) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) return [];
+
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+            .first();
+
+        if (!user) return [];
+
+        // Get all components for the user
+        const allComponents = await ctx.db
+            .query("userComponents")
+            .withIndex("by_user", (q) => q.eq("userId", user._id))
+            .collect();
+        
+        // Filter to only show deleted components (not permanently deleted yet)
+        const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        
+        return allComponents.filter(
+            (component) => component.deletedAt && component.deletedAt > sevenDaysAgo
+        );
+    },
+});
+
+export const restoreUserComponent = mutation({
+    args: {
+        id: v.id("userComponents"),
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("Unauthenticated");
+
+        const component = await ctx.db.get(args.id);
+        if (!component) throw new Error("Component not found");
+
+        // Verify ownership
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+            .first();
+
+        if (!user || component.userId !== user._id) {
+            throw new Error("Unauthorized");
+        }
+
+        // Restore: remove deletedAt timestamp
+        await ctx.db.patch(args.id, {
+            deletedAt: undefined,
+        });
+    },
+});
+
 export const publishComponent = mutation({
     args: {
         id: v.id("userComponents"),
@@ -217,5 +271,70 @@ export const publishComponent = mutation({
             dependencies: component.dependencies,
             globalCss: component.globalCss,
         });
+    },
+});
+
+export const searchComponents = query({
+    args: {
+        query: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        const searchTerm = args.query.toLowerCase().trim();
+
+        if (searchTerm.length === 0) {
+            return {
+                marketplace: [],
+                myComponents: [],
+            };
+        }
+
+        // Search marketplace components (only public ones)
+        const allCatalogComponents = await ctx.db
+            .query("catalogComponents")
+            .collect();
+
+        const marketplaceResults = allCatalogComponents
+            .filter((component) => {
+                // Only show public components
+                if (!component.isPublic) return false;
+                const nameMatch = component.name.toLowerCase().includes(searchTerm);
+                const descriptionMatch = component.description?.toLowerCase().includes(searchTerm) || false;
+                const componentIdMatch = component.componentId.toLowerCase().includes(searchTerm);
+                const categoryMatch = component.category?.toLowerCase().includes(searchTerm) || false;
+                return nameMatch || descriptionMatch || componentIdMatch || categoryMatch;
+            })
+            .slice(0, 5); // Limit to 5 results
+
+        // Search user components (if authenticated)
+        let myComponentsResults: any[] = [];
+        if (identity) {
+            const user = await ctx.db
+                .query("users")
+                .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+                .first();
+
+            if (user) {
+                const allUserComponents = await ctx.db
+                    .query("userComponents")
+                    .withIndex("by_user", (q) => q.eq("userId", user._id))
+                    .collect();
+
+                myComponentsResults = allUserComponents
+                    .filter((component) => {
+                        // Only show non-deleted components
+                        if (component.deletedAt) return false;
+                        const nameMatch = component.name.toLowerCase().includes(searchTerm);
+                        const catalogIdMatch = component.catalogComponentId?.toLowerCase().includes(searchTerm) || false;
+                        return nameMatch || catalogIdMatch;
+                    })
+                    .slice(0, 5); // Limit to 5 results
+            }
+        }
+
+        return {
+            marketplace: marketplaceResults,
+            myComponents: myComponentsResults,
+        };
     },
 });
