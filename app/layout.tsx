@@ -7,6 +7,7 @@ import Header from '@/components/Header'
 import { Toaster } from 'sonner'
 import StoreUserEffect from '@/components/StoreUserEffect'
 import { ThemeProvider } from "@/components/theme-provider"
+import { DesignPageProvider } from "@/components/DesignPageContext"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,19 +34,21 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ClerkProvider>
           <ConvexClientProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <StoreUserEffect />
-              <Header />
-              <main className="min-h-screen bg-background">
-                {children}
-              </main>
-              <Toaster />
-            </ThemeProvider>
+            <DesignPageProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <StoreUserEffect />
+                <Header />
+                <main className="min-h-screen bg-background">
+                  {children}
+                </main>
+                <Toaster />
+              </ThemeProvider>
+            </DesignPageProvider>
           </ConvexClientProvider>
         </ClerkProvider>
       </body>

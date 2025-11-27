@@ -27,6 +27,7 @@ interface MonacoEditorInternalProps {
   componentPath: string;
   saveStatus?: SaveStatus;
   onSave?: (files: Record<string, { code: string }>) => void;
+  onCodeChange?: (files: Record<string, { code: string }>) => void;
   initialCode: string;
 }
 
@@ -35,12 +36,17 @@ function MonacoEditorInternal({
   componentPath,
   saveStatus = "idle",
   onSave,
+  onCodeChange,
   initialCode,
   currentTheme,
   onThemeChange,
+  componentDisplayName,
+  componentDescription,
 }: MonacoEditorInternalProps & {
   currentTheme: string;
   onThemeChange: (theme: string) => void;
+  componentDisplayName?: string;
+  componentDescription?: string;
 }) {
   const { code, updateCode } = useActiveCode();
   const { sandpack } = useSandpack();
@@ -60,6 +66,9 @@ function MonacoEditorInternal({
     if (onSave) {
       onSave(sandpack.files);
     }
+    if (onCodeChange) {
+      onCodeChange(sandpack.files);
+    }
   };
 
   const handleUndo = () => {
@@ -70,55 +79,86 @@ function MonacoEditorInternal({
     updateCode(initialCode);
   };
 
+  const handleCodeChange = (value: string | undefined) => {
+    const newCode = value || "";
+    // Update the code in Sandpack - this will trigger the preview to update
+    updateCode(newCode);
+    
+    // Call onCodeChange callback with updated files
+    if (onCodeChange) {
+      // Create updated files object with the new code for the active file
+      const updatedFiles = {
+        ...sandpack.files,
+        [sandpack.activeFile]: {
+          ...sandpack.files[sandpack.activeFile],
+          code: newCode,
+        },
+      };
+      onCodeChange(updatedFiles);
+    }
+  };
+
   return (
     <SandpackStack style={{ height: "100%", margin: 0 }}>
-      <div className="flex items-center justify-between bg-muted/50 pr-4 border-b border-border h-10 shrink-0">
-        <EditorTabs />
-        <div className="flex items-center gap-2">
-          <div className="mr-2">
-            <ThemeSelector currentTheme={currentTheme} onThemeChange={onThemeChange} />
+      <div className="bg-muted/50 border-b border-border shrink-0">
+        <div className="flex items-center justify-between gap-2 px-4 py-3">
+          <div className="flex items-center gap-2">
+            {componentDisplayName && (
+              <h1 className="font-semibold">{componentDisplayName}</h1>
+            )}
+            {componentDescription && (
+              <span className="text-xs text-muted-foreground">{componentDescription}</span>
+            )}
           </div>
-          <SaveStatusIndicator status={saveStatus} />
-          {!readOnly && (
-            <>
-              <div className="h-4 w-px bg-border mx-2" />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={handleUndo}
-                title="Undo"
-              >
-                <Undo className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={handleReset}
-                title="Reset to last saved"
-              >
-                <RotateCcw className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="default"
-                size="sm"
-                className="h-7 px-3 ml-2"
-                onClick={handleSave}
-                disabled={saveStatus === "saving"}
-              >
-                <Save className="h-3.5 w-3.5 mr-1.5" />
-                Save
-              </Button>
-            </>
-          )}
+          <div className="flex items-center gap-2">
+            <div className="mr-2">
+              <ThemeSelector currentTheme={currentTheme} onThemeChange={onThemeChange} />
+            </div>
+            <SaveStatusIndicator status={saveStatus} />
+            {!readOnly && (
+              <>
+                <div className="h-4 w-px bg-border mx-2" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={handleUndo}
+                  title="Undo"
+                >
+                  <Undo className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={handleReset}
+                  title="Reset to last saved"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="h-7 px-3 ml-2"
+                  onClick={handleSave}
+                  disabled={saveStatus === "saving"}
+                >
+                  <Save className="h-3.5 w-3.5 mr-1.5" />
+                  Save
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="border-t border-border h-10">
+          <EditorTabs />
         </div>
       </div>
       <div
         style={{
           flex: 1,
           background: "var(--background)",
-          height: "calc(100% - 40px)",
+          height: "calc(100% - 90px)",
         }}
       >
         <Editor
@@ -128,11 +168,11 @@ function MonacoEditorInternal({
           theme={theme === "dark" ? "vs-dark" : "light"}
           key={sandpack.activeFile}
           defaultValue={code}
-          onChange={(value) => updateCode(value || "")}
+          onChange={handleCodeChange}
           onMount={handleEditorDidMount}
           options={{
             minimap: { enabled: false },
-            fontSize: 14,
+            fontSize: 12,
             readOnly: readOnly,
             renderValidationDecorations: "off",
             showUnused: false,
@@ -151,9 +191,12 @@ interface ComponentEditorProps {
   globalCss?: string;
   readOnly?: boolean;
   onSave?: (files: Record<string, { code: string }>) => void;
+  onCodeChange?: (files: Record<string, { code: string }>) => void;
   dependencies?: Record<string, string>;
   componentName: string;
   saveStatus?: SaveStatus;
+  componentDisplayName?: string;
+  componentDescription?: string;
 }
 
 const getAppCode = (isDark: boolean) => `import React, { useEffect, useLayoutEffect } from "react";
@@ -397,9 +440,12 @@ export default function ComponentEditor({
   globalCss,
   readOnly,
   onSave,
+  onCodeChange,
   dependencies,
   componentName,
   saveStatus,
+  componentDisplayName,
+  componentDescription,
 }: ComponentEditorProps) {
   const { theme, resolvedTheme } = useTheme();
   const componentPath = `/components/ui/${componentName}.tsx`;
@@ -465,7 +511,7 @@ export function cn(...inputs: ClassValue[]) {
         hidden: true,
       },
     }),
-    [componentPath, isDark, effectiveCss]
+    [componentPath, isDark, effectiveCss, code, previewCode, globalCss]
   );
 
   const options = React.useMemo(
@@ -479,6 +525,9 @@ export function cn(...inputs: ClassValue[]) {
       visibleFiles: ["/Preview.tsx", componentPath, "/styles/globals.css"],
       showUnused: false,
       showDeprecated: false,
+      // Enable immediate preview updates when code changes
+      recompileMode: "immediate" as const,
+      recompileDelay: 0,
     }),
     [componentPath]
   );
@@ -525,20 +574,27 @@ export function cn(...inputs: ClassValue[]) {
             <MonacoEditorInternal
               readOnly={readOnly}
               onSave={onSave}
+              onCodeChange={onCodeChange}
               componentPath={componentPath}
               saveStatus={saveStatus}
               initialCode={code}
               currentTheme={currentTheme}
               onThemeChange={handleThemeChange}
+              componentDisplayName={componentDisplayName}
+              componentDescription={componentDescription}
             />
           </ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize={50} minSize={25}>
-            <SandpackPreview
-              style={{ height: "100%", width: "100%" }}
-              showOpenInCodeSandbox={false}
-              showRefreshButton={true}
-            />
+            <div className="h-full w-full p-4 bg-muted/30 rounded-lg flex items-center justify-center">
+              <div className="h-full w-full bg-background rounded-md overflow-hidden shadow-sm border border-border/50">
+                <SandpackPreview
+                  style={{ height: "100%", width: "100%" }}
+                  showOpenInCodeSandbox={false}
+                  showRefreshButton={true}
+                />
+              </div>
+            </div>
           </ResizablePanel>
         </ResizablePanelGroup>
       </SandpackProvider>
