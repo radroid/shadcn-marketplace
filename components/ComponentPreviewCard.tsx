@@ -5,6 +5,7 @@ import { SandpackProvider, SandpackPreview } from "@codesandbox/sandpack-react";
 import { useTheme } from "next-themes";
 import { getAppCode, UTILS_CODE, TSCONFIG_CODE } from "./editor/sandpack-app-template";
 import { DEFAULT_GLOBAL_CSS } from "./editor/theme-generator";
+import { REGISTRY } from "./registry";
 
 // Constants matching ComponentEditor
 const EXTERNAL_RESOURCES = [
@@ -96,6 +97,18 @@ export function ComponentPreviewCard({
     const cssHash = globalCss ? globalCss.length : 0;
     return `preview-${componentName}-${codeHash}-${previewHash}-${cssHash}-${isDark ? "dark" : "light"}`;
   }, [componentName, code, previewCode, globalCss, isDark]);
+
+  const LocalPreview = REGISTRY[componentName];
+
+  if (LocalPreview) {
+    return (
+      <div className="aspect-video w-full rounded-md border bg-muted/30 overflow-hidden flex items-center justify-center p-4">
+        <div className="bg-background p-8 rounded-lg shadow-sm border flex items-center justify-center min-w-[200px] min-h-[100px]">
+          <LocalPreview />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="aspect-video w-full rounded-md border bg-muted overflow-hidden">

@@ -338,3 +338,158 @@ export const searchComponents = query({
         };
     },
 });
+
+/**
+ * Bulk insert multiple catalog components into the database.
+ * 
+ * This mutation efficiently inserts multiple components in a single transaction.
+ * Equivalent to SQL: INSERT INTO catalogComponents (...) VALUES (...), (...), ...;
+ */
+export const bulkInsertCatalogComponents = mutation({
+    args: {
+        components: v.array(
+            v.object({
+                componentId: v.string(),
+                name: v.string(),
+                description: v.string(),
+                category: v.string(),
+                code: v.string(),
+                previewCode: v.string(),
+                tags: v.optional(v.array(v.string())),
+                dependencies: v.optional(v.record(v.string(), v.string())),
+                isPublic: v.boolean(),
+                extraFiles: v.optional(v.array(v.object({
+                    path: v.string(),
+                    content: v.string(),
+                }))),
+                globalCss: v.optional(v.string()),
+            }),
+        ),
+    },
+    handler: async (ctx, args) => {
+        const { components } = args;
+        const insertedIds: string[] = [];
+
+        // Insert in a loop. Convex queues all the changes to be executed
+        // in a single transaction when the mutation ends.
+        for (const component of components) {
+            // Check if component with this componentId already exists
+            const existing = await ctx.db
+                .query("catalogComponents")
+                .withIndex("by_componentId", (q) => q.eq("componentId", component.componentId))
+                .first();
+
+            if (existing) {
+                // Skip existing components or update them
+                // For now, we'll skip to avoid duplicates
+                console.log(`Skipping existing component: ${component.componentId}`);
+                continue;
+            }
+
+            const id = await ctx.db.insert("catalogComponents", {
+                componentId: component.componentId,
+                name: component.name,
+                description: component.description,
+                category: component.category,
+                code: component.code,
+                previewCode: component.previewCode,
+                tags: component.tags,
+                dependencies: component.dependencies,
+                isPublic: component.isPublic,
+                extraFiles: component.extraFiles,
+                globalCss: component.globalCss,
+            });
+
+            insertedIds.push(id);
+        }
+
+        return {
+            inserted: insertedIds.length,
+            total: components.length,
+            skipped: components.length - insertedIds.length,
+        };
+    },
+});
+
+/**
+ * Fix previewCode import paths to match componentId
+ * This mutation updates all components to ensure previewCode imports match the component file path
+ */
+export const fixPreviewCodeImports = mutation({
+    args: {
+        componentId: v.optional(v.string()), // If provided, fix only this component
+    },
+    handler: async (ctx, args) => {
+        let components;
+        if (args.componentId) {
+            const component = await ctx.db
+                .query("catalogComponents")
+                .withIndex("by_componentId", (q) => q.eq("componentId", args.componentId!))
+                .first();
+            components = component ? [component] : [];
+        } else {
+            components = await ctx.db.query("catalogComponents").collect();
+        }
+
+        let fixed = 0;
+        let errors: string[] = [];
+
+        for (const component of components) {
+            if (!component) continue;
+
+            try {
+                // Extract the import path from previewCode
+                const previewCode = component.previewCode;
+                
+                // Find all import statements that reference @/components/ui/
+                const importRegex = /from\s+["']@\/components\/ui\/([^"']+)["']/g;
+                let updatedPreviewCode = previewCode;
+                let hasChanges = false;
+
+                // Replace all component imports to match componentId
+                updatedPreviewCode = updatedPreviewCode.replace(importRegex, (match, importedPath) => {
+                    // If the import doesn't match componentId, fix it
+                    if (importedPath !== component.componentId) {
+                        hasChanges = true;
+                        // Replace just the path part, keeping quotes and "from" intact
+                        const quote = match.includes("'") ? "'" : '"';
+                        return `from ${quote}@/components/ui/${component.componentId}${quote}`;
+                    }
+                    return match;
+                });
+
+                // Also fix the code field - remove trailing backticks and clean up
+                let cleanedCode = component.code.trim();
+                
+                // Remove leading backtick if present
+                if (cleanedCode.startsWith('`')) {
+                    cleanedCode = cleanedCode.slice(1);
+                    hasChanges = true;
+                }
+                
+                // Remove trailing backtick if present
+                if (cleanedCode.endsWith('`')) {
+                    cleanedCode = cleanedCode.slice(0, -1);
+                    hasChanges = true;
+                }
+
+                // Update if there were any changes
+                if (hasChanges || cleanedCode !== component.code) {
+                    await ctx.db.patch(component._id, {
+                        previewCode: updatedPreviewCode,
+                        code: cleanedCode,
+                    });
+                    fixed++;
+                }
+            } catch (error) {
+                errors.push(`${component.componentId}: ${error}`);
+            }
+        }
+
+        return {
+            fixed,
+            total: components.length,
+            errors: errors.length > 0 ? errors : undefined,
+        };
+    },
+});
