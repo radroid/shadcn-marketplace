@@ -156,10 +156,17 @@ interface ComponentEditorProps {
   saveStatus?: SaveStatus;
 }
 
-const getTailwindConfigScript = () => `(function() {
+const getAppCode = (isDark: boolean) => `import React, { useEffect, useLayoutEffect } from "react";
+import * as Preview from "./Preview";
+import { cn } from "@/lib/utils";
+import "./styles/globals.css";
+
+const configureTailwind = () => {
+  if (typeof window === "undefined") return;
+  
   const setConfig = () => {
-    if (typeof tailwind !== "undefined") {
-      tailwind.config = {
+    if (typeof window.tailwind !== "undefined") {
+      window.tailwind.config = {
         darkMode: "class",
         theme: {
           extend: {
@@ -190,7 +197,12 @@ const getTailwindConfigScript = () => `(function() {
               "sidebar-accent": "var(--sidebar-accent)",
               "sidebar-accent-foreground": "var(--sidebar-accent-foreground)",
               "sidebar-border": "var(--sidebar-border)",
-              "sidebar-ring": "var(--sidebar-ring)"
+              "sidebar-ring": "var(--sidebar-ring)",
+              "chart-1": "var(--chart-1)",
+              "chart-2": "var(--chart-2)",
+              "chart-3": "var(--chart-3)",
+              "chart-4": "var(--chart-4)",
+              "chart-5": "var(--chart-5)"
             },
             borderRadius: {
               xs: "calc(var(--radius) - 6px)",
@@ -213,59 +225,78 @@ const getTailwindConfigScript = () => `(function() {
               sans: "var(--font-sans, ui-sans-serif, system-ui)",
               mono: "var(--font-mono, ui-monospace, SFMono-Regular, Menlo)",
               serif: "var(--font-serif, ui-serif, Georgia)"
+            },
+            letterSpacing: {
+              tighter: "var(--tracking-tighter, -0.05em)",
+              tight: "var(--tracking-tight, -0.025em)",
+              normal: "var(--tracking-normal, 0em)",
+              wide: "var(--tracking-wide, 0.025em)",
+              wider: "var(--tracking-wider, 0.05em)",
+              widest: "var(--tracking-widest, 0.1em)"
+            },
+            spacing: {
+              px: "1px",
+              0: "0",
+              0.5: "calc(var(--spacing, 0.25rem) * 0.5)",
+              1: "var(--spacing, 0.25rem)",
+              1.5: "calc(var(--spacing, 0.25rem) * 1.5)",
+              2: "calc(var(--spacing, 0.25rem) * 2)",
+              2.5: "calc(var(--spacing, 0.25rem) * 2.5)",
+              3: "calc(var(--spacing, 0.25rem) * 3)",
+              3.5: "calc(var(--spacing, 0.25rem) * 3.5)",
+              4: "calc(var(--spacing, 0.25rem) * 4)",
+              5: "calc(var(--spacing, 0.25rem) * 5)",
+              6: "calc(var(--spacing, 0.25rem) * 6)",
+              7: "calc(var(--spacing, 0.25rem) * 7)",
+              8: "calc(var(--spacing, 0.25rem) * 8)",
+              9: "calc(var(--spacing, 0.25rem) * 9)",
+              10: "calc(var(--spacing, 0.25rem) * 10)",
+              11: "calc(var(--spacing, 0.25rem) * 11)",
+              12: "calc(var(--spacing, 0.25rem) * 12)",
+              14: "calc(var(--spacing, 0.25rem) * 14)",
+              16: "calc(var(--spacing, 0.25rem) * 16)",
+              20: "calc(var(--spacing, 0.25rem) * 20)",
+              24: "calc(var(--spacing, 0.25rem) * 24)",
+              28: "calc(var(--spacing, 0.25rem) * 28)",
+              32: "calc(var(--spacing, 0.25rem) * 32)",
+              36: "calc(var(--spacing, 0.25rem) * 36)",
+              40: "calc(var(--spacing, 0.25rem) * 40)",
+              44: "calc(var(--spacing, 0.25rem) * 44)",
+              48: "calc(var(--spacing, 0.25rem) * 48)",
+              52: "calc(var(--spacing, 0.25rem) * 52)",
+              56: "calc(var(--spacing, 0.25rem) * 56)",
+              60: "calc(var(--spacing, 0.25rem) * 60)",
+              64: "calc(var(--spacing, 0.25rem) * 64)",
+              72: "calc(var(--spacing, 0.25rem) * 72)",
+              80: "calc(var(--spacing, 0.25rem) * 80)",
+              96: "calc(var(--spacing, 0.25rem) * 96)"
             }
           }
         }
       };
-    } else {
-      setTimeout(setConfig, 50);
+      return true;
     }
+    return false;
   };
-  setConfig();
-})();`;
-
-const getAppCode = (isDark: boolean) => `import React, { useEffect } from "react";
-import * as Preview from "./Preview";
-import { cn } from "@/lib/utils";
-import "./styles/globals.css";
-
-const ensureTailwindConfig = () => {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  // Skip if config already set
-  if (document.getElementById("__tailwind_config")) {
-    return;
-  }
-
-  // Wait for tailwind to be available (loaded via externalResources)
-  const checkAndSetConfig = () => {
-    if (typeof window.tailwind !== "undefined") {
-      // Set config only if it hasn't been set yet
-      if (!window.tailwind.config || Object.keys(window.tailwind.config).length === 0) {
-        const configScript = document.createElement("script");
-        configScript.id = "__tailwind_config";
-        configScript.innerHTML = \`${getTailwindConfigScript()}\`;
-        document.head.appendChild(configScript);
+  
+  // Try to set config immediately
+  if (!setConfig()) {
+    // If tailwind isn't loaded yet, poll for it
+    const interval = setInterval(() => {
+      if (setConfig()) {
+        clearInterval(interval);
       }
-    } else {
-      // Retry after a short delay if tailwind isn't loaded yet
-      setTimeout(checkAndSetConfig, 50);
-    }
-  };
-
-  checkAndSetConfig();
+    }, 50);
+    // Stop trying after 5 seconds
+    setTimeout(() => clearInterval(interval), 5000);
+  }
 };
 
 export default function App() {
   const isDark = ${isDark};
 
-  useEffect(() => {
-    ensureTailwindConfig();
-  }, []);
-
-  useEffect(() => {
+  // Use useLayoutEffect to set dark mode class before first paint
+  useLayoutEffect(() => {
     const html = document.documentElement;
     if (isDark) {
       html.classList.add("dark");
@@ -273,6 +304,10 @@ export default function App() {
       html.classList.remove("dark");
     }
   }, [isDark]);
+
+  useEffect(() => {
+    configureTailwind();
+  }, []);
 
   const Component =
     Preview.default ||
@@ -318,24 +353,38 @@ function CodeSync({
   const prevIsDarkRef = useRef(isDark);
 
   React.useEffect(() => {
+    let needsRefresh = false;
+
     if (code !== prevCodeRef.current) {
       sandpack.updateFile(componentPath, code);
       prevCodeRef.current = code;
+      needsRefresh = true;
     }
 
     if (previewCode !== prevPreviewCodeRef.current) {
       sandpack.updateFile("/Preview.tsx", previewCode);
       prevPreviewCodeRef.current = previewCode;
+      needsRefresh = true;
     }
 
     if (globalCss !== prevCssRef.current) {
       sandpack.updateFile("/styles/globals.css", globalCss);
       prevCssRef.current = globalCss;
+      needsRefresh = true;
     }
 
     if (isDark !== prevIsDarkRef.current) {
       sandpack.updateFile("/App.tsx", getAppCode(isDark));
       prevIsDarkRef.current = isDark;
+      needsRefresh = true;
+    }
+
+    // Force a refresh of the preview when dark mode changes
+    if (needsRefresh && sandpack.runSandpack) {
+      // Small delay to ensure file updates are processed
+      setTimeout(() => {
+        sandpack.runSandpack();
+      }, 100);
     }
   }, [code, previewCode, globalCss, componentPath, isDark, sandpack]);
 
@@ -356,22 +405,29 @@ export default function ComponentEditor({
   const componentPath = `/components/ui/${componentName}.tsx`;
   const [currentTheme, setCurrentTheme] = useState("default");
   const [generatedCss, setGeneratedCss] = useState(DEFAULT_GLOBAL_CSS);
+  const [isThemeManuallySelected, setIsThemeManuallySelected] = useState(false);
 
   // Update CSS when theme changes
   const handleThemeChange = (newTheme: string) => {
     setCurrentTheme(newTheme);
     setGeneratedCss(getThemeCss(newTheme));
+    setIsThemeManuallySelected(true);
   };
 
-  const effectiveCss =
-    globalCss && globalCss.trim().length > 0 ? globalCss : generatedCss;
+  // Use generated CSS when a theme is manually selected, otherwise fall back to globalCss prop
+  const effectiveCss = isThemeManuallySelected
+    ? generatedCss
+    : globalCss && globalCss.trim().length > 0
+      ? globalCss
+      : generatedCss;
 
   const isDark = React.useMemo(() => resolvedTheme === "dark", [resolvedTheme]);
 
-  // Keep dependency array minimal so SandpackProvider doesn't remount.
+  // Include currentTheme to ensure SandpackProvider remounts with new theme CSS.
+  // Include isDark to ensure initial render has correct dark mode state.
   const files = React.useMemo(
     () => ({
-      "/App.tsx": getAppCode(resolvedTheme === "dark"),
+      "/App.tsx": getAppCode(isDark),
       "/Preview.tsx": previewCode,
       [componentPath]: code,
       "/lib/utils.ts": {
@@ -409,12 +465,16 @@ export function cn(...inputs: ClassValue[]) {
         hidden: true,
       },
     }),
-    [componentPath]
+    [componentPath, isDark, effectiveCss]
   );
 
   const options = React.useMemo(
     () => ({
-      externalResources: ["https://cdn.tailwindcss.com?plugins=forms,typography"],
+      externalResources: [
+        "https://cdn.tailwindcss.com?plugins=forms,typography",
+        // Google Fonts used by tweakcn themes
+        "https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..800&family=Source+Serif+4:wght@200..900&family=Geist+Mono:wght@100..900&family=Bricolage+Grotesque:wght@200..800&family=Playfair+Display:wght@400..900&family=DM+Serif+Display&family=IBM+Plex+Mono:wght@100..700&family=Fira+Code:wght@300..700&family=Space+Grotesk:wght@300..700&family=Source+Code+Pro:wght@200..900&family=Outfit:wght@100..900&family=Poppins:wght@100..900&family=DM+Sans:wght@100..900&family=Lora:wght@400..700&family=Merriweather:wght@300..900&family=Rubik:wght@300..900&family=Space+Mono:wght@400;700&family=Archivo:wght@100..900&family=Inconsolata:wght@200..900&family=Montserrat:wght@100..900&family=Lato:wght@100..900&family=Nunito:wght@200..900&family=Quicksand:wght@300..700&family=Raleway:wght@100..900&family=Work+Sans:wght@100..900&family=Karla:wght@200..800&family=Press+Start+2P&family=Pixelify+Sans:wght@400..700&family=VT323&family=Courier+Prime:wght@400;700&display=swap",
+      ],
       activeFile: "/Preview.tsx",
       visibleFiles: ["/Preview.tsx", componentPath, "/styles/globals.css"],
       showUnused: false,
@@ -442,6 +502,7 @@ export function cn(...inputs: ClassValue[]) {
   return (
     <div className="h-full w-full">
       <SandpackProvider
+        key={`sandpack-${currentTheme}-${isDark ? "dark" : "light"}`}
         template="react-ts"
         theme={theme === "dark" ? "dark" : "light"}
         files={files}
