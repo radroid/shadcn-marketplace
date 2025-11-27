@@ -145,10 +145,10 @@ export default function DesignPage() {
                 <ComponentEditor
                     code={component.code}
                     previewCode={component.previewCode}
-                    // globalCss={component.globalCss} // TODO: Add globalCss support to userComponents schema if needed
+                    globalCss={component.globalCss}
                     dependencies={component.dependencies}
                     componentName={component.catalogComponentId || "component"}
-                    onChange={async (files) => {
+                    onSave={async (files) => {
                         setSaveStatus('saving');
                         try {
                             const componentPath = `/components/ui/${component.catalogComponentId || "component"}.tsx`;
@@ -156,6 +156,7 @@ export default function DesignPage() {
                                 id,
                                 code: files[componentPath]?.code || component.code,
                                 previewCode: files["/Preview.tsx"]?.code || component.previewCode,
+                                globalCss: files["/globals.css"]?.code || component.globalCss,
                             });
                             setSaveStatus('saved');
 

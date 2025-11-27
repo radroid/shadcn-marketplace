@@ -55,6 +55,7 @@ export default defineSchema({
         name: v.string(),
         code: v.string(),           // User's customized version
         previewCode: v.string(),    // User's customized preview
+        globalCss: v.optional(v.string()), // User's customized global CSS
         dependencies: v.optional(v.record(v.string(), v.string())),
     })
         .index('by_project', ['projectId'])

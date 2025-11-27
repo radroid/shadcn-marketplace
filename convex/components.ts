@@ -32,6 +32,7 @@ export const createUserComponent = mutation({
         previewCode: v.string(),
         catalogComponentId: v.optional(v.string()),
         projectId: v.optional(v.id("projects")),
+        globalCss: v.optional(v.string()),
         dependencies: v.optional(v.record(v.string(), v.string())),
     },
     handler: async (ctx, args) => {
@@ -57,6 +58,7 @@ export const createUserComponent = mutation({
             catalogComponentId: args.catalogComponentId,
             projectId: args.projectId,
             userId: user._id,
+            globalCss: args.globalCss,
             dependencies: args.dependencies,
         });
     },
@@ -74,6 +76,7 @@ export const updateUserComponent = mutation({
         id: v.id("userComponents"),
         code: v.string(),
         previewCode: v.optional(v.string()),
+        globalCss: v.optional(v.string()),
         dependencies: v.optional(v.record(v.string(), v.string())),
     },
     handler: async (ctx, args) => {
@@ -89,6 +92,7 @@ export const updateUserComponent = mutation({
         await ctx.db.patch(args.id, {
             code: args.code,
             ...(args.previewCode && { previewCode: args.previewCode }),
+            ...(args.globalCss && { globalCss: args.globalCss }),
             ...(args.dependencies && { dependencies: args.dependencies }),
         });
     },

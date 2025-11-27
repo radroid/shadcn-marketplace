@@ -4,6 +4,7 @@ import { SignInButton, UserButton } from '@clerk/nextjs';
 import { Authenticated, Unauthenticated } from "convex/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ModeToggle } from "./mode-toggle";
 
 export default function Header() {
     return (
@@ -25,6 +26,7 @@ export default function Header() {
                             <Button>Sign In</Button>
                         </SignInButton>
                     </Unauthenticated>
+                    <ModeToggle />
                 </div>
             </div>
         </header>
