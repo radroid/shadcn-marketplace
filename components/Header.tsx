@@ -26,8 +26,8 @@ export default function Header() {
                         </Button>
                     )}
                     <Authenticated>
-                        <Link href="/projects">
-                            <Button variant="ghost">My Projects</Button>
+                        <Link href="/components">
+                            <Button variant="ghost">My Components</Button>
                         </Link>
                         <UserButton />
                     </Authenticated>

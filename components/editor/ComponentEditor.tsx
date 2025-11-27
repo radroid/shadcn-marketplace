@@ -353,7 +353,7 @@ export default function ComponentEditor({
   
   // Track last saved files state
   const [lastSavedFiles, setLastSavedFiles] = useState<Record<string, { code: string }> | undefined>(undefined);
-
+  
   const handleThemeChange = useCallback((newTheme: string) => {
     setCurrentTheme(newTheme);
     setGeneratedCss(getThemeCss(newTheme));
@@ -364,7 +364,8 @@ export default function ComponentEditor({
   const isDark = useMemo(() => resolvedTheme === "dark", [resolvedTheme]);
   const effectiveCss = useEffectiveCss(globalCss, isThemeManuallySelected, generatedCss);
 
-  // Sandpack configuration
+  // Sandpack configuration - files should only update when source data changes
+  // Sandpack will handle live updates internally when user edits in the editor
   const files = useSandpackFiles(componentPath, code, previewCode, effectiveCss, isDark);
   const options = useSandpackOptions(componentPath);
   const customSetup = useSandpackSetup(dependencies);
@@ -384,6 +385,7 @@ export default function ComponentEditor({
   // Note: lastSavedFiles is updated in InternalEditor when saveStatus becomes 'saved'
 
   // Key for forcing SandpackProvider remount when theme changes
+  // Don't include source data in key - let Sandpack handle file updates internally
   const providerKey = `sandpack-${currentTheme}-${isDark ? "dark" : "light"}`;
 
   return (

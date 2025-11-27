@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalMutation } from "./_generated/server";
 
 export const list = query({
     args: {},
@@ -111,10 +111,72 @@ export const listUserComponents = query({
 
         if (!user) return [];
 
-        return await ctx.db
+        // Read all components for the user - this ensures Convex can track all documents
+        // for proper reactivity. We filter in memory to exclude deleted components.
+        const allComponents = await ctx.db
             .query("userComponents")
             .withIndex("by_user", (q) => q.eq("userId", user._id))
             .collect();
+        
+        // Filter out deleted components (or components deleted more than 7 days ago)
+        // Using Date.now() here is fine - Convex tracks the documents we read, not the filter logic
+        const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        
+        return allComponents.filter(
+            (component) => !component.deletedAt || component.deletedAt > sevenDaysAgo
+        );
+    },
+});
+
+export const deleteUserComponent = mutation({
+    args: {
+        id: v.id("userComponents"),
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("Unauthenticated");
+
+        const component = await ctx.db.get(args.id);
+        if (!component) throw new Error("Component not found");
+
+        // Verify ownership
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+            .first();
+
+        if (!user || component.userId !== user._id) {
+            throw new Error("Unauthorized");
+        }
+
+        // Soft delete: set deletedAt timestamp
+        await ctx.db.patch(args.id, {
+            deletedAt: Date.now(),
+        });
+    },
+});
+
+export const listDeletedComponents = query({
+    args: {
+        beforeTimestamp: v.number(),
+    },
+    handler: async (ctx, args) => {
+        // Get all components that were deleted before the given timestamp
+        const allComponents = await ctx.db.query("userComponents").collect();
+        return allComponents.filter(
+            (component) => 
+                component.deletedAt && 
+                component.deletedAt <= args.beforeTimestamp
+        );
+    },
+});
+
+export const permanentlyDeleteUserComponent = internalMutation({
+    args: {
+        id: v.id("userComponents"),
+    },
+    handler: async (ctx, args) => {
+        await ctx.db.delete(args.id);
     },
 });
 
@@ -153,6 +215,7 @@ export const publishComponent = mutation({
             isPublic: true,
             authorId: component.userId,
             dependencies: component.dependencies,
+            globalCss: component.globalCss,
         });
     },
 });

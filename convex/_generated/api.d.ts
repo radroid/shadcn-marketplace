@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as cleanup from "../cleanup.js";
 import type * as components_ from "../components.js";
 import type * as users from "../users.js";
 
@@ -18,6 +19,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  cleanup: typeof cleanup;
   components: typeof components_;
   users: typeof users;
 }>;

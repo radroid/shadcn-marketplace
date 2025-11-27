@@ -181,7 +181,7 @@ function DesignPageContent() {
                                     id,
                                     code: files[componentPath]?.code || component.code,
                                     previewCode: files["/Preview.tsx"]?.code || component.previewCode,
-                                    globalCss: files["/globals.css"]?.code || component.globalCss,
+                                    globalCss: files["/styles/globals.css"]?.code || component.globalCss,
                                 });
                                 setSaveStatus('saved');
 

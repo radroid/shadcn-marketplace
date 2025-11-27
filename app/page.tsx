@@ -5,6 +5,7 @@ import { api } from "@/convex/_generated/api";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ComponentPreviewCard } from "@/components/ComponentPreviewCard";
 
 export default function Home() {
   const components = useQuery(api.components.list);
@@ -37,9 +38,13 @@ export default function Home() {
                 <CardDescription>{component.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-1">
-                <div className="aspect-video w-full rounded-md border bg-muted flex items-center justify-center text-muted-foreground text-sm">
-                  Preview Placeholder
-                </div>
+                <ComponentPreviewCard
+                  code={component.code}
+                  previewCode={component.previewCode}
+                  globalCss={component.globalCss}
+                  dependencies={component.dependencies}
+                  componentName={component.componentId}
+                />
               </CardContent>
               <CardFooter>
                 <Link href={`/component/${component.componentId}`} className="w-full">
