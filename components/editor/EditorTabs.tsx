@@ -20,13 +20,13 @@ export function EditorTabs() {
     };
 
     return (
-        <div className="flex items-center h-full overflow-x-auto no-scrollbar">
+        <div className="flex items-center h-full overflow-x-auto no-scrollbar py-2">
             {visibleFiles.map((filePath: string) => (
                 <button
                     key={filePath}
                     onClick={() => setActiveFile(filePath)}
                     className={cn(
-                        "flex items-center gap-2 px-3 h-full text-sm border-r border-border min-w-[120px] max-w-[200px] transition-colors relative",
+                        "flex items-center gap-2 px-3 py-2 text-sm border-r border-border min-w-[120px] max-w-[200px] transition-colors relative",
                         activeFile === filePath
                             ? "bg-background text-foreground font-medium"
                             : "bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground"

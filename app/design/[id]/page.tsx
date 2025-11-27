@@ -21,10 +21,12 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { SaveStatus } from "@/components/editor/SaveStatusIndicator";
 import { useDesignPage } from "@/components/DesignPageContext";
+import { useUser } from "@clerk/nextjs";
 
 function DesignPageContent() {
     const params = useParams();
     const id = params.id as Id<"userComponents">;
+    const { isSignedIn } = useUser();
 
     const component = useQuery(api.components.getUserComponent, { id });
     const updateComponent = useMutation(api.components.updateUserComponent);
@@ -38,6 +40,11 @@ function DesignPageContent() {
 
 
     const handlePublish = async () => {
+        if (!isSignedIn) {
+            toast.error("Please sign in to publish components");
+            return;
+        }
+
         try {
             await publishComponent({
                 id,
@@ -48,8 +55,13 @@ function DesignPageContent() {
             toast.success("Component published to marketplace!");
             setIsPublishOpen(false);
         } catch (error) {
-            toast.error("Failed to publish component");
             console.error(error);
+            const errorMessage = error instanceof Error ? error.message : "Failed to publish component";
+            if (errorMessage.includes("Unauthenticated")) {
+                toast.error("Please sign in to publish components");
+            } else {
+                toast.error("Failed to publish component");
+            }
         }
     };
 
@@ -156,6 +168,12 @@ function DesignPageContent() {
                         componentDisplayName={component.name}
                         componentDescription={component.catalogComponentId ? `Shadcn ui: ${component.catalogComponentId}` : undefined}
                         onSave={async (files) => {
+                            if (!isSignedIn) {
+                                setSaveStatus('error');
+                                toast.error("Please sign in to save changes");
+                                return;
+                            }
+
                             setSaveStatus('saving');
                             try {
                                 const componentPath = `/components/ui/${component.catalogComponentId || "component"}.tsx`;
@@ -172,7 +190,12 @@ function DesignPageContent() {
                             } catch (error) {
                                 console.error(error);
                                 setSaveStatus('error');
-                                toast.error("Failed to save changes");
+                                const errorMessage = error instanceof Error ? error.message : "Failed to save changes";
+                                if (errorMessage.includes("Unauthenticated")) {
+                                    toast.error("Please sign in to save changes");
+                                } else {
+                                    toast.error("Failed to save changes");
+                                }
                             }
                         }}
                             saveStatus={saveStatus}
