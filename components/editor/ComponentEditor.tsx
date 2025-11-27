@@ -142,12 +142,114 @@ interface ComponentEditorProps {
   saveStatus?: SaveStatus;
 }
 
+const getTailwindConfigScript = () => `(function() {
+  const setConfig = () => {
+    if (typeof tailwind !== "undefined") {
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              background: "var(--background)",
+              foreground: "var(--foreground)",
+              card: "var(--card)",
+              "card-foreground": "var(--card-foreground)",
+              popover: "var(--popover)",
+              "popover-foreground": "var(--popover-foreground)",
+              primary: "var(--primary)",
+              "primary-foreground": "var(--primary-foreground)",
+              secondary: "var(--secondary)",
+              "secondary-foreground": "var(--secondary-foreground)",
+              muted: "var(--muted)",
+              "muted-foreground": "var(--muted-foreground)",
+              accent: "var(--accent)",
+              "accent-foreground": "var(--accent-foreground)",
+              destructive: "var(--destructive)",
+              "destructive-foreground": "var(--destructive-foreground)",
+              border: "var(--border)",
+              input: "var(--input)",
+              ring: "var(--ring)",
+              sidebar: "var(--sidebar)",
+              "sidebar-foreground": "var(--sidebar-foreground)",
+              "sidebar-primary": "var(--sidebar-primary)",
+              "sidebar-primary-foreground": "var(--sidebar-primary-foreground)",
+              "sidebar-accent": "var(--sidebar-accent)",
+              "sidebar-accent-foreground": "var(--sidebar-accent-foreground)",
+              "sidebar-border": "var(--sidebar-border)",
+              "sidebar-ring": "var(--sidebar-ring)"
+            },
+            borderRadius: {
+              xs: "calc(var(--radius) - 6px)",
+              sm: "calc(var(--radius) - 4px)",
+              md: "calc(var(--radius) - 2px)",
+              lg: "var(--radius)",
+              xl: "calc(var(--radius) + 4px)"
+            },
+            boxShadow: {
+              "2xs": "var(--shadow-2xs)",
+              xs: "var(--shadow-xs)",
+              sm: "var(--shadow-sm)",
+              DEFAULT: "var(--shadow)",
+              md: "var(--shadow-md)",
+              lg: "var(--shadow-lg)",
+              xl: "var(--shadow-xl)",
+              "2xl": "var(--shadow-2xl)"
+            },
+            fontFamily: {
+              sans: "var(--font-sans, ui-sans-serif, system-ui)",
+              mono: "var(--font-mono, ui-monospace, SFMono-Regular, Menlo)",
+              serif: "var(--font-serif, ui-serif, Georgia)"
+            }
+          }
+        }
+      };
+    } else {
+      setTimeout(setConfig, 50);
+    }
+  };
+  setConfig();
+})();`;
+
 const getAppCode = (isDark: boolean) => `import React, { useEffect } from "react";
 import * as Preview from "./Preview";
 import { cn } from "@/lib/utils";
+import "./styles/globals.css";
+
+const ensureTailwindConfig = () => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  // Skip if config already set
+  if (document.getElementById("__tailwind_config")) {
+    return;
+  }
+
+  // Wait for tailwind to be available (loaded via externalResources)
+  const checkAndSetConfig = () => {
+    if (typeof window.tailwind !== "undefined") {
+      // Set config only if it hasn't been set yet
+      if (!window.tailwind.config || Object.keys(window.tailwind.config).length === 0) {
+        const configScript = document.createElement("script");
+        configScript.id = "__tailwind_config";
+        configScript.innerHTML = \`${getTailwindConfigScript()}\`;
+        document.head.appendChild(configScript);
+      }
+    } else {
+      // Retry after a short delay if tailwind isn't loaded yet
+      setTimeout(checkAndSetConfig, 50);
+    }
+  };
+
+  checkAndSetConfig();
+};
 
 export default function App() {
   const isDark = ${isDark};
+
+  useEffect(() => {
+    ensureTailwindConfig();
+  }, []);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -289,7 +391,7 @@ export function cn(...inputs: ClassValue[]) {
 
   const options = React.useMemo(
     () => ({
-      externalResources: ["https://unpkg.com/@tailwindcss/browser@4"],
+      externalResources: ["https://cdn.tailwindcss.com?plugins=forms,typography"],
       classes: {
         "sp-layout": "!h-[calc(100vh-60px)]",
       },
