@@ -97,13 +97,16 @@ export default function DesignPage() {
     // Let's update ComponentEditor to accept `onFilesChange`.
 
     return (
-        <div className="h-[calc(100vh-64px)] flex flex-col">
+        <div className="h-[calc(100vh-64px)] flex flex-col overflow-hidden">
             {/* Header is handled inside ComponentEditor or we wrap it? 
            If we want a global save status, we need state here.
        */}
-            <div className="border-b bg-background px-4 py-2 flex items-center justify-between">
+            <div className="border-b bg-background px-4 py-2 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-2">
                     <h1 className="font-semibold">{component?.name || "Loading..."}</h1>
+                    {component?.catalogComponentId && (
+                        <span className="text-xs text-muted-foreground">Shadcn ui: {component.catalogComponentId}</span>
+                    )}
                 </div>
                 <div className="flex items-center gap-2">
                     <Dialog open={isPublishOpen} onOpenChange={setIsPublishOpen}>
@@ -142,7 +145,8 @@ export default function DesignPage() {
                 </div>
             </div>
             {component ? (
-                <ComponentEditor
+                <div className="flex-1 min-h-0">
+                    <ComponentEditor
                     code={component.code}
                     previewCode={component.previewCode}
                     globalCss={component.globalCss}
@@ -168,8 +172,9 @@ export default function DesignPage() {
                             toast.error("Failed to save changes");
                         }
                     }}
-                    saveStatus={saveStatus}
-                />
+                        saveStatus={saveStatus}
+                    />
+                </div>
             ) : (
                 <div className="flex h-full items-center justify-center">
                     <Loader2 className="h-8 w-8 animate-spin" />

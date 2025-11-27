@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import Editor, { Monaco } from "@monaco-editor/react";
 import {
   useActiveCode,
@@ -8,14 +8,19 @@ import {
   useSandpack,
   SandpackProvider,
   SandpackPreview,
-  SandpackLayout,
 } from "@codesandbox/sandpack-react";
 import { useTheme } from "next-themes";
 import SaveStatusIndicator, { SaveStatus } from "./SaveStatusIndicator";
 import { EditorTabs } from "./EditorTabs";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, Save, Undo } from "lucide-react";
-import { DEFAULT_GLOBAL_CSS } from "./theme-generator";
+import { DEFAULT_GLOBAL_CSS, getThemeCss } from "./theme-generator";
+import { ThemeSelector } from "./ThemeSelector";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 
 interface MonacoEditorInternalProps {
   readOnly?: boolean;
@@ -31,7 +36,12 @@ function MonacoEditorInternal({
   saveStatus = "idle",
   onSave,
   initialCode,
-}: MonacoEditorInternalProps) {
+  currentTheme,
+  onThemeChange,
+}: MonacoEditorInternalProps & {
+  currentTheme: string;
+  onThemeChange: (theme: string) => void;
+}) {
   const { code, updateCode } = useActiveCode();
   const { sandpack } = useSandpack();
   const { theme } = useTheme();
@@ -65,6 +75,9 @@ function MonacoEditorInternal({
       <div className="flex items-center justify-between bg-muted/50 pr-4 border-b border-border h-10 shrink-0">
         <EditorTabs />
         <div className="flex items-center gap-2">
+          <div className="mr-2">
+            <ThemeSelector currentTheme={currentTheme} onThemeChange={onThemeChange} />
+          </div>
           <SaveStatusIndicator status={saveStatus} />
           {!readOnly && (
             <>
@@ -124,6 +137,7 @@ function MonacoEditorInternal({
             renderValidationDecorations: "off",
             showUnused: false,
             showDeprecated: false,
+            automaticLayout: true,
           }}
         />
       </div>
@@ -340,8 +354,17 @@ export default function ComponentEditor({
 }: ComponentEditorProps) {
   const { theme, resolvedTheme } = useTheme();
   const componentPath = `/components/ui/${componentName}.tsx`;
+  const [currentTheme, setCurrentTheme] = useState("default");
+  const [generatedCss, setGeneratedCss] = useState(DEFAULT_GLOBAL_CSS);
+
+  // Update CSS when theme changes
+  const handleThemeChange = (newTheme: string) => {
+    setCurrentTheme(newTheme);
+    setGeneratedCss(getThemeCss(newTheme));
+  };
+
   const effectiveCss =
-    globalCss && globalCss.trim().length > 0 ? globalCss : DEFAULT_GLOBAL_CSS;
+    globalCss && globalCss.trim().length > 0 ? globalCss : generatedCss;
 
   const isDark = React.useMemo(() => resolvedTheme === "dark", [resolvedTheme]);
 
@@ -392,14 +415,10 @@ export function cn(...inputs: ClassValue[]) {
   const options = React.useMemo(
     () => ({
       externalResources: ["https://cdn.tailwindcss.com?plugins=forms,typography"],
-      classes: {
-        "sp-layout": "!h-[calc(100vh-60px)]",
-      },
       activeFile: "/Preview.tsx",
       visibleFiles: ["/Preview.tsx", componentPath, "/styles/globals.css"],
       showUnused: false,
       showDeprecated: false,
-      resizablePanels: true,
     }),
     [componentPath]
   );
@@ -421,31 +440,48 @@ export function cn(...inputs: ClassValue[]) {
   );
 
   return (
-    <SandpackProvider
-      template="react-ts"
-      theme={theme === "dark" ? "dark" : "light"}
-      files={files}
-      options={options}
-      customSetup={customSetup}
-    >
-      <CodeSync
-        code={code}
-        previewCode={previewCode}
-        globalCss={effectiveCss}
-        componentPath={componentPath}
-        isDark={isDark}
-      />
-      <SandpackLayout>
-        <MonacoEditorInternal
-          readOnly={readOnly}
-          onSave={onSave}
+    <div className="h-full w-full">
+      <SandpackProvider
+        template="react-ts"
+        theme={theme === "dark" ? "dark" : "light"}
+        files={files}
+        options={options}
+        customSetup={customSetup}
+        style={{ height: "100%", display: "flex", flexDirection: "column" }}
+      >
+        <CodeSync
+          code={code}
+          previewCode={previewCode}
+          globalCss={effectiveCss}
           componentPath={componentPath}
-          saveStatus={saveStatus}
-          initialCode={code}
+          isDark={isDark}
         />
-        <SandpackPreview style={{ height: "100%" }} />
-      </SandpackLayout>
-    </SandpackProvider>
+        <ResizablePanelGroup
+          direction="horizontal"
+          className="flex-1 min-h-0"
+        >
+          <ResizablePanel defaultSize={50} minSize={25}>
+            <MonacoEditorInternal
+              readOnly={readOnly}
+              onSave={onSave}
+              componentPath={componentPath}
+              saveStatus={saveStatus}
+              initialCode={code}
+              currentTheme={currentTheme}
+              onThemeChange={handleThemeChange}
+            />
+          </ResizablePanel>
+          <ResizableHandle withHandle />
+          <ResizablePanel defaultSize={50} minSize={25}>
+            <SandpackPreview
+              style={{ height: "100%", width: "100%" }}
+              showOpenInCodeSandbox={false}
+              showRefreshButton={true}
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </SandpackProvider>
+    </div>
   );
 }
 
