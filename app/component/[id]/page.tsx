@@ -70,8 +70,8 @@ export default function ComponentDetailPage() {
     }
 
     return (
-        <div className="w-full flex flex-col">
-            <div className="border-b bg-background px-4 py-3 flex items-center justify-between">
+        <div className="w-full h-[calc(100vh-64px)] flex flex-col">
+            <div className="border-b bg-background px-4 py-3 flex items-center justify-between shrink-0">
                 <div>
                     <h1 className="text-lg font-semibold">{component.name}</h1>
                     <p className="text-sm text-muted-foreground">{component.description}</p>
@@ -86,7 +86,7 @@ export default function ComponentDetailPage() {
                     </Button>
                 </div>
             </div>
-            <div className="w-full">
+            <div className="w-full flex-1 min-h-0">
                 <ComponentEditor
                     code={component.code}
                     previewCode={component.previewCode}

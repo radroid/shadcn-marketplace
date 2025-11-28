@@ -177,7 +177,7 @@
 
 .readonly-editor-container .cm-scroller {
   overflow: auto !important;
-  overflow-x: hidden !important;
+  overflow-x: auto !important;
   overflow-y: auto !important;
   height: 100% !important;
   flex: 1 !important;
@@ -282,7 +282,7 @@
 
 .editor-container .cm-scroller {
   overflow: auto !important;
-  overflow-x: hidden !important;
+  overflow-x: auto !important;
   overflow-y: auto !important;
   height: 100% !important;
   flex: 1 !important;

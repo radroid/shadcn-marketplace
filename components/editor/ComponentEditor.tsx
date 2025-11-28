@@ -440,7 +440,7 @@ export default function ComponentEditor({
   const providerKey = `sandpack-${currentTheme}-${isDark ? "dark" : "light"}-${registryHash}`;
 
   return (
-    <div className={readOnly ? "w-full flex flex-col" : "h-full w-full flex flex-col"}>
+    <div className={readOnly ? "h-full w-full flex flex-col" : "h-full w-full flex flex-col"}>
       <SandpackProvider
         key={providerKey}
         template="react-ts"
@@ -448,7 +448,7 @@ export default function ComponentEditor({
         files={files}
         options={options}
         customSetup={customSetup}
-        style={readOnly ? { display: "flex", flexDirection: "column" } : { height: "100%", display: "flex", flexDirection: "column" }}
+        style={{ height: "100%", display: "flex", flexDirection: "column" }}
       >
         {/* Toolbar - outside SandpackLayout but inside SandpackProvider */}
         {!readOnly && (
@@ -467,7 +467,7 @@ export default function ComponentEditor({
         )}
 
         {/* Editor and Preview using SandpackLayout for proper live updates */}
-        <SandpackLayout style={readOnly ? { display: "flex", minHeight: "70vh" } : { flex: 1, minHeight: 0, display: "flex", overflow: "hidden" }}>
+        <SandpackLayout style={{ flex: 1, minHeight: 0, display: "flex", overflow: "hidden" }}>
           {/* Editor Panel */}
           <div 
             className={readOnly ? "readonly-editor-container" : "editor-container"}
@@ -477,7 +477,7 @@ export default function ComponentEditor({
               flexDirection: "column", 
               minWidth: 0,
               minHeight: 0,
-              maxHeight: readOnly ? "70vh" : "100%",
+              height: "100%",
               overflow: "hidden"
             }}
           >
@@ -497,7 +497,7 @@ export default function ComponentEditor({
           </div>
 
           {/* Preview Panel with styling */}
-          <div className="flex-1 p-4 bg-muted/30 flex items-center justify-center" style={{ minWidth: 0, minHeight: readOnly ? "70vh" : undefined, maxHeight: readOnly ? "70vh" : undefined }}>
+          <div className="flex-1 p-4 bg-muted/30 flex items-center justify-center" style={{ minWidth: 0, minHeight: 0 }}>
             <div className="h-full w-full bg-background rounded-lg overflow-hidden shadow-sm border border-border/50">
               <SandpackPreview
                 style={{ height: "100%", width: "100%" }}
