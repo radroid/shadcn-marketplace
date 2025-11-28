@@ -5,7 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { useParams } from "next/navigation";
 import ComponentEditor from "@/components/editor/ComponentEditor";
 import { Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Id } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
 import {
@@ -25,10 +25,26 @@ import { useUser } from "@clerk/nextjs";
 
 function DesignPageContent() {
     const params = useParams();
-    const id = params.id as Id<"userComponents">;
+    const id = params.id as string;
     const { isSignedIn } = useUser();
 
-    const component = useQuery(api.components.getUserComponent, { id });
+
+
+    // Try to fetch as catalog component first
+    const catalogComponent = useQuery(
+        api.components.get,
+        id.startsWith('k') ? { id: id as Id<"catalogComponents"> } : "skip"
+    );
+
+    // Then try as user component
+    const userComponent = useQuery(
+        api.components.getUserComponent,
+        id.startsWith('j') ? { id: id as Id<"userComponents"> } : "skip"
+    );
+
+
+
+    const component = catalogComponent || userComponent;
     const updateComponent = useMutation(api.components.updateUserComponent);
     const publishComponent = useMutation(api.components.publishComponent);
 
@@ -39,15 +55,30 @@ function DesignPageContent() {
     const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 
 
+
+    // Use registry dependencies directly from the component data
+    const registryDependencies = component?.registryDependencies || [];
+    const registryComponentCode = useQuery(
+        api.components.getResolvedRegistryComponents,
+        registryDependencies.length > 0 ? { ids: registryDependencies } : "skip"
+    );
+
+
+
     const handlePublish = async () => {
         if (!isSignedIn) {
             toast.error("Please sign in to publish components");
             return;
         }
 
+        if (!component || ('catalogComponentId' in component)) {
+            toast.error("Only user components can be published");
+            return;
+        }
+
         try {
             await publishComponent({
-                id,
+                id: component._id as Id<"userComponents">,
                 name: publishName,
                 description: publishDesc,
                 category: publishCategory,
@@ -56,12 +87,7 @@ function DesignPageContent() {
             setIsPublishOpen(false);
         } catch (error) {
             console.error(error);
-            const errorMessage = error instanceof Error ? error.message : "Failed to publish component";
-            if (errorMessage.includes("Unauthenticated")) {
-                toast.error("Please sign in to publish components");
-            } else {
-                toast.error("Failed to publish component");
-            }
+            toast.error("Failed to publish component");
         }
     };
 
@@ -112,16 +138,16 @@ function DesignPageContent() {
     // Register the publish click handler with the context
     const designPageContext = useDesignPage();
     const setPublishHandler = designPageContext?.setPublishHandler;
-    
+
     useEffect(() => {
         if (!setPublishHandler) return;
-        
+
         const handlePublishClick = () => {
             setIsPublishOpen(true);
         };
-        
+
         setPublishHandler(handlePublishClick);
-        
+
         // Cleanup: remove handler when component unmounts
         return () => {
             setPublishHandler(null);
@@ -130,43 +156,44 @@ function DesignPageContent() {
 
     return (
         <div className="h-[calc(100vh-64px)] flex flex-col overflow-hidden">
-                <Dialog open={isPublishOpen} onOpenChange={setIsPublishOpen}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Publish to Marketplace</DialogTitle>
-                            <DialogDescription>
-                                Share your component with the world.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="name" className="text-right">Name</Label>
-                                <Input id="name" value={publishName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPublishName(e.target.value)} className="col-span-3" />
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="desc" className="text-right">Description</Label>
-                                <Input id="desc" value={publishDesc} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPublishDesc(e.target.value)} className="col-span-3" />
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="cat" className="text-right">Category</Label>
-                                <Input id="cat" value={publishCategory} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPublishCategory(e.target.value)} className="col-span-3" />
-                            </div>
+            <Dialog open={isPublishOpen} onOpenChange={setIsPublishOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Publish to Marketplace</DialogTitle>
+                        <DialogDescription>
+                            Share your component with the world.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="name" className="text-right">Name</Label>
+                            <Input id="name" value={publishName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPublishName(e.target.value)} className="col-span-3" />
                         </div>
-                        <DialogFooter>
-                            <Button onClick={handlePublish}>Publish</Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-                {component ? (
-                    <div className="flex-1 min-h-0">
-                        <ComponentEditor
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="desc" className="text-right">Description</Label>
+                            <Input id="desc" value={publishDesc} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPublishDesc(e.target.value)} className="col-span-3" />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="cat" className="text-right">Category</Label>
+                            <Input id="cat" value={publishCategory} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPublishCategory(e.target.value)} className="col-span-3" />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={handlePublish}>Publish</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            {component ? (
+                <div className="flex-1 min-h-0">
+                    <ComponentEditor
                         code={component.code}
                         previewCode={component.previewCode}
                         globalCss={component.globalCss}
                         dependencies={component.dependencies}
-                        componentName={component.catalogComponentId || "component"}
+                        registryDependenciesCode={registryComponentCode}
+                        componentName={'componentId' in component ? component.componentId : (component.catalogComponentId || "component")}
                         componentDisplayName={component.name}
-                        componentDescription={component.catalogComponentId ? `Shadcn ui: ${component.catalogComponentId}` : undefined}
+                        componentDescription={'componentId' in component ? `Shadcn ui: ${component.componentId}` : undefined}
                         onSave={async (files) => {
                             if (!isSignedIn) {
                                 setSaveStatus('error');
@@ -176,12 +203,21 @@ function DesignPageContent() {
 
                             setSaveStatus('saving');
                             try {
-                                const componentPath = `/components/ui/${component.catalogComponentId || "component"}.tsx`;
+                                const componentPath = `/components/ui/${'componentId' in component ? component.componentId : (component.catalogComponentId || "component")}.tsx`;
+
+                                // Only allow saving user components for now
+                                if (!('catalogComponentId' in component)) {
+                                    toast.error("Cannot save catalog components");
+                                    setSaveStatus('error');
+                                    return;
+                                }
+
                                 await updateComponent({
-                                    id,
+                                    id: component._id as Id<"userComponents">,
                                     code: files[componentPath]?.code || component.code,
                                     previewCode: files["/Preview.tsx"]?.code || component.previewCode,
                                     globalCss: files["/styles/globals.css"]?.code || component.globalCss,
+                                    registryDependencies: component.registryDependencies,
                                 });
                                 setSaveStatus('saved');
 
@@ -198,15 +234,15 @@ function DesignPageContent() {
                                 }
                             }
                         }}
-                            saveStatus={saveStatus}
-                        />
-                    </div>
-                ) : (
-                    <div className="flex h-full items-center justify-center">
-                        <Loader2 className="h-8 w-8 animate-spin" />
-                    </div>
-                )}
-            </div>
+                        saveStatus={saveStatus}
+                    />
+                </div>
+            ) : (
+                <div className="flex h-full items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+            )}
+        </div>
     );
 }
 

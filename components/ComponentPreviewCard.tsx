@@ -124,7 +124,7 @@ export function ComponentPreviewCard({
         <div className="h-full w-full">
           <SandpackPreview
             style={{ height: "100%", width: "100%" }}
-            showOpenInCodeSandbox={false}
+            showOpenInCodeSandbox={true}
             showRefreshButton={false}
             showNavigator={false}
           />

@@ -17,11 +17,15 @@ export default function ComponentDetailPage() {
     const component = useQuery(api.components.getBySlug, { componentId });
     const createUserComponent = useMutation(api.components.createUserComponent);
 
+    // Fetch registry dependencies
+    const registryDependencies = component?.registryDependencies || [];
+    const registryComponentCode = useQuery(
+        api.components.getResolvedRegistryComponents,
+        registryDependencies.length > 0 ? { ids: registryDependencies } : "skip"
+    );
+
     const handleEdit = async () => {
         if (!isSignedIn) {
-            // Ideally redirect to login or show modal, but for now just alert or let Clerk handle it via middleware if protected
-            // But this page is public.
-            // We can redirect to sign-in
             router.push("/sign-in");
             return;
         }
@@ -35,6 +39,8 @@ export default function ComponentDetailPage() {
                 previewCode: component.previewCode,
                 catalogComponentId: component.componentId,
                 dependencies: component.dependencies,
+                registryDependencies: component.registryDependencies,
+                globalCss: component.globalCss,
             });
             router.push(`/design/${newId}`);
         } catch (error) {
@@ -75,6 +81,7 @@ export default function ComponentDetailPage() {
                     previewCode={component.previewCode}
                     readOnly={true}
                     dependencies={component.dependencies}
+                    registryDependenciesCode={registryComponentCode}
                     componentName={component.componentId}
                 />
             </div>

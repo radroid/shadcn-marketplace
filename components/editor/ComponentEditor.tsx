@@ -190,6 +190,24 @@ function InternalToolbar({
     };
   }, [hasChanges, handleSave, onSave]);
 
+  // Notify parent of code changes (debounced)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (onCodeChange) {
+        // Normalize files to ensure they have a code property
+        const normalizedFiles: Record<string, { code: string }> = {};
+        for (const [path, file] of Object.entries(sandpack.files)) {
+          normalizedFiles[path] = {
+            code: typeof file === 'string' ? file : file.code
+          };
+        }
+        onCodeChange(normalizedFiles);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [sandpack.files, onCodeChange]);
+
   return (
     <EditorToolbar
       componentDisplayName={componentDisplayName}
@@ -233,6 +251,23 @@ function useSandpackFiles(
   isDark: boolean,
   registryDependenciesCode?: Record<string, { code: string; dependencies?: Record<string, string> }>
 ) {
+  const registryFiles = useMemo(() => {
+    if (!registryDependenciesCode) return {};
+
+    const files = Object.entries(registryDependenciesCode).reduce(
+      (acc, [name, data]) => ({
+        ...acc,
+        [`/components/ui/${name}.tsx`]: {
+          code: data.code,
+          hidden: false,
+        },
+      }),
+      {} as Record<string, { code: string; hidden: boolean }>
+    );
+
+    return files;
+  }, [registryDependenciesCode]);
+
   return useMemo(
     () => ({
       "/App.tsx": getAppCode(isDark),
@@ -247,21 +282,9 @@ function useSandpackFiles(
         code: TSCONFIG_CODE,
         hidden: true,
       },
-      // Inject registry dependencies
-      ...(registryDependenciesCode
-        ? Object.entries(registryDependenciesCode).reduce(
-          (acc, [name, data]) => ({
-            ...acc,
-            [`/components/ui/${name}.tsx`]: {
-              code: data.code,
-              hidden: true,
-            },
-          }),
-          {}
-        )
-        : {}),
+      ...registryFiles,
     }),
-    [componentPath, isDark, effectiveCss, code, previewCode, registryDependenciesCode]
+    [componentPath, isDark, effectiveCss, code, previewCode, registryFiles]
   );
 }
 
@@ -357,8 +380,11 @@ export default function ComponentEditor({
 
   // Create a hash of source data to detect meaningful changes
   const sourceDataKey = useMemo(() => {
-    return `${componentPath}|${code}|${previewCode}|${effectiveCss}|${isDark}`;
-  }, [componentPath, code, previewCode, effectiveCss, isDark]);
+    const registryHash = registryDependenciesCode
+      ? Object.keys(registryDependenciesCode).join(',')
+      : '';
+    return `${componentPath}|${code}|${previewCode}|${effectiveCss}|${isDark}|${registryHash}`;
+  }, [componentPath, code, previewCode, effectiveCss, isDark, registryDependenciesCode]);
 
   // Update ref when source data changes - this updates the files object without triggering re-render
   // Sandpack will sync files via updateFile calls from InternalEditor when needed
@@ -379,14 +405,16 @@ export default function ComponentEditor({
       }
       setLastSavedFiles(savedFiles);
     }
-  }, [code, previewCode, effectiveCss]); // Update when source data changes
+  }, [code, previewCode, effectiveCss, registryDependenciesCode]); // Update when source data changes
 
   // Note: lastSavedFiles is updated in InternalEditor when saveStatus becomes 'saved'
 
   // Key for SandpackProvider - keep it stable to preserve internal state
-  // Only remount when theme changes, not when files change
-  // Sandpack will handle file updates internally for live editing
-  const providerKey = `sandpack-${currentTheme}-${isDark ? "dark" : "light"}`;
+  // Only remount when theme changes or registry dependencies change (to ensure new files are loaded)
+  const registryHash = registryDependenciesCode
+    ? Object.keys(registryDependenciesCode).join(',')
+    : '';
+  const providerKey = `sandpack-${currentTheme}-${isDark ? "dark" : "light"}-${registryHash}`;
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -432,7 +460,7 @@ export default function ComponentEditor({
             <div className="h-full w-full bg-background rounded-lg overflow-hidden shadow-sm border border-border/50">
               <SandpackPreview
                 style={{ height: "100%", width: "100%" }}
-                showOpenInCodeSandbox={false}
+                showOpenInCodeSandbox={true}
                 showRefreshButton
               />
             </div>

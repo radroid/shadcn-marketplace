@@ -25,6 +25,59 @@ export const getBySlug = query({
     },
 });
 
+
+
+export const getResolvedRegistryComponents = query({
+    args: { ids: v.array(v.string()) },
+    handler: async (ctx, args) => {
+        const result: Record<string, { code: string; dependencies?: Record<string, string> }> = {};
+        const queue = [...args.ids];
+        const visited = new Set<string>();
+
+        // Limit iterations to prevent infinite loops, though visited set handles cycles
+        let iterations = 0;
+        const MAX_ITERATIONS = 10;
+
+        while (queue.length > 0 && iterations < MAX_ITERATIONS) {
+            iterations++;
+            const batch = queue.splice(0, queue.length); // Get all current items
+            const uniqueBatch = batch.filter(id => !visited.has(id));
+
+            if (uniqueBatch.length === 0) continue;
+
+            uniqueBatch.forEach(id => visited.add(id));
+
+            // Fetch this batch
+            const components = await Promise.all(
+                uniqueBatch.map(id =>
+                    ctx.db.query("catalogComponents")
+                        .withIndex("by_componentId", q => q.eq("componentId", id))
+                        .first()
+                )
+            );
+
+            for (const component of components) {
+                if (component) {
+                    result[component.componentId] = {
+                        code: component.code,
+                        dependencies: component.dependencies,
+                    };
+
+                    if (component.registryDependencies) {
+                        for (const dep of component.registryDependencies) {
+                            if (!visited.has(dep)) {
+                                queue.push(dep);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    },
+});
+
 export const createUserComponent = mutation({
     args: {
         name: v.string(),
@@ -34,6 +87,7 @@ export const createUserComponent = mutation({
         projectId: v.optional(v.id("projects")),
         globalCss: v.optional(v.string()),
         dependencies: v.optional(v.record(v.string(), v.string())),
+        registryDependencies: v.optional(v.array(v.string())),
     },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
@@ -60,6 +114,7 @@ export const createUserComponent = mutation({
             userId: user._id,
             globalCss: args.globalCss,
             dependencies: args.dependencies,
+            registryDependencies: args.registryDependencies,
         });
     },
 });
@@ -78,6 +133,7 @@ export const updateUserComponent = mutation({
         previewCode: v.optional(v.string()),
         globalCss: v.optional(v.string()),
         dependencies: v.optional(v.record(v.string(), v.string())),
+        registryDependencies: v.optional(v.array(v.string())),
     },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
@@ -94,6 +150,7 @@ export const updateUserComponent = mutation({
             ...(args.previewCode && { previewCode: args.previewCode }),
             ...(args.globalCss && { globalCss: args.globalCss }),
             ...(args.dependencies && { dependencies: args.dependencies }),
+            ...(args.registryDependencies && { registryDependencies: args.registryDependencies }),
         });
     },
 });
@@ -117,7 +174,7 @@ export const listUserComponents = query({
             .query("userComponents")
             .withIndex("by_user", (q) => q.eq("userId", user._id))
             .collect();
-        
+
         // Filter out ALL deleted components - they should only appear in trash
         // Using Date.now() here is fine - Convex tracks the documents we read, not the filter logic
         return allComponents.filter(
@@ -162,8 +219,8 @@ export const listDeletedComponents = query({
         // Get all components that were deleted before the given timestamp
         const allComponents = await ctx.db.query("userComponents").collect();
         return allComponents.filter(
-            (component) => 
-                component.deletedAt && 
+            (component) =>
+                component.deletedAt &&
                 component.deletedAt <= args.beforeTimestamp
         );
     },
@@ -196,10 +253,10 @@ export const listTrashComponents = query({
             .query("userComponents")
             .withIndex("by_user", (q) => q.eq("userId", user._id))
             .collect();
-        
+
         // Filter to only show deleted components (not permanently deleted yet)
         const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-        
+
         return allComponents.filter(
             (component) => component.deletedAt && component.deletedAt > sevenDaysAgo
         );
@@ -269,6 +326,7 @@ export const publishComponent = mutation({
             isPublic: true,
             authorId: component.userId,
             dependencies: component.dependencies,
+            registryDependencies: component.registryDependencies,
             globalCss: component.globalCss,
         });
     },
@@ -357,6 +415,7 @@ export const bulkInsertCatalogComponents = mutation({
                 previewCode: v.string(),
                 tags: v.optional(v.array(v.string())),
                 dependencies: v.optional(v.record(v.string(), v.string())),
+                registryDependencies: v.optional(v.array(v.string())),
                 isPublic: v.boolean(),
                 extraFiles: v.optional(v.array(v.object({
                     path: v.string(),
@@ -395,6 +454,7 @@ export const bulkInsertCatalogComponents = mutation({
                 previewCode: component.previewCode,
                 tags: component.tags,
                 dependencies: component.dependencies,
+                registryDependencies: component.registryDependencies,
                 isPublic: component.isPublic,
                 extraFiles: component.extraFiles,
                 globalCss: component.globalCss,
@@ -440,7 +500,7 @@ export const fixPreviewCodeImports = mutation({
             try {
                 // Extract the import path from previewCode
                 const previewCode = component.previewCode;
-                
+
                 // Find all import statements that reference @/components/ui/
                 const importRegex = /from\s+["']@\/components\/ui\/([^"']+)["']/g;
                 let updatedPreviewCode = previewCode;
@@ -460,13 +520,13 @@ export const fixPreviewCodeImports = mutation({
 
                 // Also fix the code field - remove trailing backticks and clean up
                 let cleanedCode = component.code.trim();
-                
+
                 // Remove leading backtick if present
                 if (cleanedCode.startsWith('`')) {
                     cleanedCode = cleanedCode.slice(1);
                     hasChanges = true;
                 }
-                
+
                 // Remove trailing backtick if present
                 if (cleanedCode.endsWith('`')) {
                     cleanedCode = cleanedCode.slice(0, -1);
@@ -490,6 +550,35 @@ export const fixPreviewCodeImports = mutation({
             fixed,
             total: components.length,
             errors: errors.length > 0 ? errors : undefined,
+        };
+    },
+});
+
+/**
+ * Update dependencies for a specific component by componentId
+ */
+export const updateComponentDependencies = mutation({
+    args: {
+        componentId: v.string(),
+        dependencies: v.record(v.string(), v.string()),
+    },
+    handler: async (ctx, args) => {
+        const component = await ctx.db
+            .query("catalogComponents")
+            .withIndex("by_componentId", (q) => q.eq("componentId", args.componentId))
+            .first();
+
+        if (!component) {
+            throw new Error(`Component with componentId "${args.componentId}" not found`);
+        }
+
+        await ctx.db.patch(component._id, {
+            dependencies: args.dependencies,
+        });
+
+        return {
+            success: true,
+            componentId: args.componentId,
         };
     },
 });

@@ -35,7 +35,8 @@ export default defineSchema({
 
         // Dependencies
         dependencies: v.optional(v.record(v.string(), v.string())),
-        
+        registryDependencies: v.optional(v.array(v.string())),
+
         // Theme/CSS
         globalCss: v.optional(v.string()), // Theme CSS for the component
     })
@@ -60,6 +61,7 @@ export default defineSchema({
         previewCode: v.string(),    // User's customized preview
         globalCss: v.optional(v.string()), // User's customized global CSS
         dependencies: v.optional(v.record(v.string(), v.string())),
+        registryDependencies: v.optional(v.array(v.string())),
         deletedAt: v.optional(v.number()), // Timestamp when deleted (for 7-day trash policy)
     })
         .index('by_project', ['projectId'])
