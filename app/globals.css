@@ -127,3 +127,214 @@
   pointer-events: none !important;
   opacity: 0 !important;
 }
+
+/* Enable scrolling for Sandpack code editor in readonly mode */
+.readonly-editor-container {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.readonly-editor-container > * {
+  height: 100% !important;
+}
+
+.readonly-editor-container .sp-code-editor {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* Target the wrapper div inside sp-code-editor */
+.readonly-editor-container .sp-code-editor > div {
+  flex: 1 !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+/* Ensure tabs don't interfere with scrolling */
+.readonly-editor-container .sp-code-editor [class*="tabs"],
+.readonly-editor-container .sp-code-editor [class*="tab"] {
+  flex-shrink: 0 !important;
+}
+
+.readonly-editor-container .sp-cm,
+.readonly-editor-container .cm-editor {
+  flex: 1 !important;
+  overflow: auto !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative !important;
+}
+
+.readonly-editor-container .cm-scroller {
+  overflow: auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  height: 100% !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+}
+
+.readonly-editor-container .cm-content {
+  min-height: 100% !important;
+  padding-bottom: 1rem !important;
+}
+
+/* Target any wrapper around the editor */
+.readonly-editor-container [class*="editor-wrapper"],
+.readonly-editor-container [class*="code-view"] {
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Ensure Monaco editor container can scroll in readonly mode */
+.readonly-editor-container .monaco-editor {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+}
+
+.readonly-editor-container .monaco-editor .overflow-guard {
+  height: 100% !important;
+  overflow: visible !important;
+}
+
+.readonly-editor-container .monaco-editor .monaco-scrollable-element {
+  overflow: visible !important;
+}
+
+.readonly-editor-container .monaco-editor .monaco-scrollable-element > .scrollbar {
+  display: block !important;
+}
+
+/* Remove bottom padding from code editor in readonly mode */
+.readonly-editor-container .sp-code-editor > div:last-child {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.readonly-editor-container .cm-editor .cm-content {
+  padding-bottom: 0 !important;
+}
+
+.readonly-editor-container .monaco-editor .monaco-scrollable-element {
+  padding-bottom: 0 !important;
+}
+
+/* Enable scrolling for Sandpack code editor in editable mode */
+.editor-container {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.editor-container > * {
+  height: 100% !important;
+}
+
+.editor-container .sp-code-editor {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* Target the wrapper div inside sp-code-editor */
+.editor-container .sp-code-editor > div {
+  flex: 1 !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+/* Ensure tabs don't interfere with scrolling */
+.editor-container .sp-code-editor [class*="tabs"],
+.editor-container .sp-code-editor [class*="tab"] {
+  flex-shrink: 0 !important;
+}
+
+.editor-container .sp-cm,
+.editor-container .cm-editor {
+  flex: 1 !important;
+  overflow: auto !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative !important;
+}
+
+.editor-container .cm-scroller {
+  overflow: auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  height: 100% !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+}
+
+.editor-container .cm-content {
+  min-height: 100% !important;
+  padding-bottom: 1rem !important;
+}
+
+/* Target any wrapper around the editor */
+.editor-container [class*="editor-wrapper"],
+.editor-container [class*="code-view"] {
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Ensure Monaco editor container can scroll in editable mode */
+.editor-container .monaco-editor {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+}
+
+.editor-container .monaco-editor .overflow-guard {
+  height: 100% !important;
+  overflow: visible !important;
+}
+
+.editor-container .monaco-editor .monaco-scrollable-element {
+  overflow: visible !important;
+}
+
+.editor-container .monaco-editor .monaco-scrollable-element > .scrollbar {
+  display: block !important;
+}
+
+/* Remove bottom padding from code editor in editable mode */
+.editor-container .sp-code-editor > div:last-child {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.editor-container .cm-editor .cm-content {
+  padding-bottom: 0 !important;
+}
+
+.editor-container .monaco-editor .monaco-scrollable-element {
+  padding-bottom: 0 !important;
+}
+

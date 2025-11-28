@@ -46,10 +46,12 @@ export function EditorToolbar({
         {/* Actions */}
         <div className="flex items-center gap-2 flex-wrap justify-end">
           <div className="flex items-center gap-2">
-            <ThemeSelector
-              currentTheme={currentTheme}
-              onThemeChange={onThemeChange}
-            />
+            {!readOnly && (
+              <ThemeSelector
+                currentTheme={currentTheme}
+                onThemeChange={onThemeChange}
+              />
+            )}
             <SaveStatusIndicator status={saveStatus} hasChanges={hasChanges} />
           </div>
 

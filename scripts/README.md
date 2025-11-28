@@ -68,6 +68,52 @@ npx tsx scripts/deploy-to-convex.ts
 - ✅ **Error Handling**: Provides detailed error reporting
 - ✅ **Progress Tracking**: Shows real-time progress and summary
 
+## Handling Code with Special Characters
+
+When storing code that contains special characters (quotes, backticks, template literals, CSS selectors, etc.), the script automatically handles:
+
+### Code Cleaning
+
+The script includes robust code cleaning that handles:
+- **CSV double-quote escaping**: Converts `""` to `"` (standard CSV escaping)
+- **JSON-encoded strings**: Properly decodes JSON-encoded code strings
+- **Markdown code blocks**: Removes backtick wrappers from code blocks
+- **Complex syntax**: Handles template literals, JSX attributes, CSS selectors with brackets, etc.
+
+### Validation
+
+Before storing, the script validates code and reports:
+- Unclosed quotes in JSX attributes
+- Mismatched brackets
+- Other syntax issues
+
+### Storage in Convex
+
+**Important**: Convex natively handles ANY string content including:
+- ✅ Single and double quotes
+- ✅ Backticks (template literals)
+- ✅ Special characters (`<`, `>`, `[`, `]`, `{`, `}`, etc.)
+- ✅ CSS selectors with complex syntax
+- ✅ Unicode characters
+- ✅ Newlines and whitespace
+
+When storing code directly in Convex (not from CSV), you don't need any special encoding - just pass the code string directly. Convex handles all escaping internally.
+
+### Example: Storing Chart Code
+
+The chart component code you provided can be stored directly:
+
+```typescript
+// No special encoding needed - Convex handles everything
+await createUserComponent({
+  code: chartCodeString, // Your full chart code with all special characters
+  previewCode: previewCodeString,
+  // ... other fields
+});
+```
+
+The script automatically cleans and validates code from CSV files. When storing code directly via the API, Convex handles everything automatically.
+
 ## Notes
 
 - The script takes precedence over CSV dependency columns - it extracts dependencies directly from code
@@ -75,6 +121,7 @@ npx tsx scripts/deploy-to-convex.ts
 - The script automatically handles JSON parsing for tags, dependencies, and files
 - Registry dependencies are validated against existing components in Convex
 - Components with missing required fields are skipped with warnings
+- **Code with special characters is automatically cleaned and validated** before storage
 
 ## Production Deployment
 

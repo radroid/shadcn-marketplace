@@ -7,6 +7,8 @@ import ComponentEditor from "@/components/editor/ComponentEditor";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@clerk/nextjs";
 import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import { ThemeSelector } from "@/components/editor/ThemeSelector";
 
 export default function ComponentDetailPage() {
     const params = useParams();
@@ -16,6 +18,9 @@ export default function ComponentDetailPage() {
 
     const component = useQuery(api.components.getBySlug, { componentId });
     const createUserComponent = useMutation(api.components.createUserComponent);
+
+    // Theme state for readonly view
+    const [currentTheme, setCurrentTheme] = useState("default");
 
     // Fetch registry dependencies
     const registryDependencies = component?.registryDependencies || [];
@@ -65,17 +70,23 @@ export default function ComponentDetailPage() {
     }
 
     return (
-        <div className="h-[calc(100vh-64px)] flex flex-col">
+        <div className="w-full flex flex-col">
             <div className="border-b bg-background px-4 py-3 flex items-center justify-between">
                 <div>
                     <h1 className="text-lg font-semibold">{component.name}</h1>
                     <p className="text-sm text-muted-foreground">{component.description}</p>
                 </div>
-                <Button onClick={handleEdit}>
-                    {isSignedIn ? "Edit Copy" : "Sign in to Edit"}
-                </Button>
+                <div className="flex items-center gap-3">
+                    <ThemeSelector
+                        currentTheme={currentTheme}
+                        onThemeChange={setCurrentTheme}
+                    />
+                    <Button onClick={handleEdit}>
+                        {isSignedIn ? "Edit Copy" : "Sign in to Edit"}
+                    </Button>
+                </div>
             </div>
-            <div className="flex-1 overflow-hidden">
+            <div className="w-full">
                 <ComponentEditor
                     code={component.code}
                     previewCode={component.previewCode}
@@ -83,6 +94,8 @@ export default function ComponentDetailPage() {
                     dependencies={component.dependencies}
                     registryDependenciesCode={registryComponentCode}
                     componentName={component.componentId}
+                    currentTheme={currentTheme}
+                    onThemeChange={setCurrentTheme}
                 />
             </div>
         </div>

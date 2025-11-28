@@ -43,6 +43,10 @@ export interface ComponentEditorProps {
   componentDisplayName?: string;
   /** Description shown in toolbar */
   componentDescription?: string;
+  /** Controlled theme value (if provided, theme is controlled externally) */
+  currentTheme?: string;
+  /** Callback when theme changes (required if currentTheme is provided) */
+  onThemeChange?: (theme: string) => void;
 }
 
 // =============================================================================
@@ -345,23 +349,42 @@ export default function ComponentEditor({
   saveStatus = "idle",
   componentDisplayName,
   componentDescription,
+  currentTheme: controlledTheme,
+  onThemeChange: controlledOnThemeChange,
 }: ComponentEditorProps) {
   const { theme, resolvedTheme } = useTheme();
   const componentPath = `/components/ui/${componentName}.tsx`;
 
-  // Theme state
-  const [currentTheme, setCurrentTheme] = useState("default");
+  // Theme state - controlled or uncontrolled
+  const [internalTheme, setInternalTheme] = useState("default");
   const [generatedCss, setGeneratedCss] = useState(DEFAULT_GLOBAL_CSS);
   const [isThemeManuallySelected, setIsThemeManuallySelected] = useState(false);
+
+  // Use controlled theme if provided, otherwise use internal state
+  const currentTheme = controlledTheme ?? internalTheme;
 
   // Track last saved files state
   const [lastSavedFiles, setLastSavedFiles] = useState<Record<string, { code: string }> | undefined>(undefined);
 
   const handleThemeChange = useCallback((newTheme: string) => {
-    setCurrentTheme(newTheme);
+    if (controlledOnThemeChange) {
+      // Controlled mode: notify parent
+      controlledOnThemeChange(newTheme);
+    } else {
+      // Uncontrolled mode: update internal state
+      setInternalTheme(newTheme);
+    }
     setGeneratedCss(getThemeCss(newTheme));
     setIsThemeManuallySelected(true);
-  }, []);
+  }, [controlledOnThemeChange]);
+
+  // Sync generated CSS when controlled theme changes
+  useEffect(() => {
+    if (controlledTheme !== undefined) {
+      setGeneratedCss(getThemeCss(controlledTheme));
+      setIsThemeManuallySelected(true);
+    }
+  }, [controlledTheme]);
 
   // Computed values
   const isDark = useMemo(() => resolvedTheme === "dark", [resolvedTheme]);
@@ -417,7 +440,7 @@ export default function ComponentEditor({
   const providerKey = `sandpack-${currentTheme}-${isDark ? "dark" : "light"}-${registryHash}`;
 
   return (
-    <div className="h-full w-full flex flex-col">
+    <div className={readOnly ? "w-full flex flex-col" : "h-full w-full flex flex-col"}>
       <SandpackProvider
         key={providerKey}
         template="react-ts"
@@ -425,38 +448,56 @@ export default function ComponentEditor({
         files={files}
         options={options}
         customSetup={customSetup}
-        style={{ height: "100%", display: "flex", flexDirection: "column" }}
+        style={readOnly ? { display: "flex", flexDirection: "column" } : { height: "100%", display: "flex", flexDirection: "column" }}
       >
         {/* Toolbar - outside SandpackLayout but inside SandpackProvider */}
-        <InternalToolbar
-          componentDisplayName={componentDisplayName}
-          componentDescription={componentDescription}
-          currentTheme={currentTheme}
-          onThemeChange={handleThemeChange}
-          saveStatus={saveStatus}
-          readOnly={readOnly}
-          onSave={onSave}
-          onCodeChange={onCodeChange}
-          lastSavedFiles={lastSavedFiles}
-          onLastSavedUpdate={setLastSavedFiles}
-        />
+        {!readOnly && (
+          <InternalToolbar
+            componentDisplayName={componentDisplayName}
+            componentDescription={componentDescription}
+            currentTheme={currentTheme}
+            onThemeChange={handleThemeChange}
+            saveStatus={saveStatus}
+            readOnly={readOnly}
+            onSave={onSave}
+            onCodeChange={onCodeChange}
+            lastSavedFiles={lastSavedFiles}
+            onLastSavedUpdate={setLastSavedFiles}
+          />
+        )}
 
         {/* Editor and Preview using SandpackLayout for proper live updates */}
-        <SandpackLayout style={{ flex: 1, minHeight: 0, display: "flex" }}>
+        <SandpackLayout style={readOnly ? { display: "flex", minHeight: "70vh" } : { flex: 1, minHeight: 0, display: "flex", overflow: "hidden" }}>
           {/* Editor Panel */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+          <div 
+            className={readOnly ? "readonly-editor-container" : "editor-container"}
+            style={{ 
+              flex: 1, 
+              display: "flex", 
+              flexDirection: "column", 
+              minWidth: 0,
+              minHeight: 0,
+              maxHeight: readOnly ? "70vh" : "100%",
+              overflow: "hidden"
+            }}
+          >
             <SandpackCodeEditor
               showTabs
               showLineNumbers
               showInlineErrors
-              wrapContent
+              wrapContent={false}
               readOnly={readOnly}
-              style={{ flex: 1 }}
+              style={{ 
+                flex: 1,
+                height: "100%",
+                minHeight: 0,
+                overflow: "hidden"
+              }}
             />
           </div>
 
           {/* Preview Panel with styling */}
-          <div className="flex-1 p-4 bg-muted/30 flex items-center justify-center" style={{ minWidth: 0 }}>
+          <div className="flex-1 p-4 bg-muted/30 flex items-center justify-center" style={{ minWidth: 0, minHeight: readOnly ? "70vh" : undefined, maxHeight: readOnly ? "70vh" : undefined }}>
             <div className="h-full w-full bg-background rounded-lg overflow-hidden shadow-sm border border-border/50">
               <SandpackPreview
                 style={{ height: "100%", width: "100%" }}
