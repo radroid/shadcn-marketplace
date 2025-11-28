@@ -7,19 +7,12 @@ import {
   SandpackPreview,
   useSandpack,
   SandpackLayout,
-  SandpackFileExplorer,
 } from "@codesandbox/sandpack-react";
 import { useTheme } from "next-themes";
 import { SaveStatus } from "./SaveStatusIndicator";
 import { EditorToolbar } from "./EditorToolbar";
-import { EditorTabs } from "./EditorTabs";
 import { DEFAULT_GLOBAL_CSS, getThemeCss } from "./theme-generator";
 import { getAppCode, UTILS_CODE, TSCONFIG_CODE } from "./sandpack-app-template";
-import {
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizableHandle,
-} from "@/components/ui/resizable";
 
 // =============================================================================
 // Types
@@ -40,6 +33,8 @@ export interface ComponentEditorProps {
   onCodeChange?: (files: Record<string, { code: string }>) => void;
   /** NPM dependencies for the component */
   dependencies?: Record<string, string>;
+  /** Code for registry dependencies (e.g. shadcn components) */
+  registryDependenciesCode?: Record<string, { code: string; dependencies?: Record<string, string> }>;
   /** Component name (used for file path) */
   componentName: string;
   /** Current save status */
@@ -70,12 +65,10 @@ const DEFAULT_DEPENDENCIES = {
 };
 
 // =============================================================================
-// Internal Editor Component (lives inside SandpackProvider)
+// Internal Toolbar Component (lives inside SandpackProvider)
 // =============================================================================
 
-interface InternalEditorProps {
-  componentPath: string;
-  initialCode: string;
+interface InternalToolbarProps {
   readOnly?: boolean;
   saveStatus: SaveStatus;
   currentTheme: string;
@@ -88,9 +81,7 @@ interface InternalEditorProps {
   onLastSavedUpdate?: (files: Record<string, { code: string }>) => void;
 }
 
-function InternalEditor({
-  componentPath,
-  initialCode,
+function InternalToolbar({
   readOnly,
   saveStatus,
   currentTheme,
@@ -101,15 +92,15 @@ function InternalEditor({
   componentDescription,
   lastSavedFiles,
   onLastSavedUpdate,
-}: InternalEditorProps) {
+}: InternalToolbarProps) {
   const { sandpack } = useSandpack();
   const saveStatusRef = useRef(saveStatus);
-  
+
   // Keep ref in sync with saveStatus
   useEffect(() => {
     saveStatusRef.current = saveStatus;
   }, [saveStatus]);
-  
+
   // Update last saved files when save is successful
   useEffect(() => {
     if (saveStatus === 'saved' && onLastSavedUpdate) {
@@ -126,33 +117,33 @@ function InternalEditor({
   // Track if there are unsaved changes
   const hasChanges = useMemo(() => {
     if (!lastSavedFiles) return false;
-    
+
     const currentFiles = sandpack.files;
     const savedFiles = lastSavedFiles;
-    
+
     // Helper to get code from file (handles both string and object formats)
     const getFileCode = (file: string | { code: string } | { code: string; hidden?: boolean }): string => {
       return typeof file === 'string' ? file : file.code;
     };
-    
+
     // Check if any file has changed
     for (const [path, file] of Object.entries(currentFiles)) {
       const savedFile = savedFiles[path];
       const currentCode = getFileCode(file);
       const savedCode = savedFile ? getFileCode(savedFile) : '';
-      
+
       if (currentCode !== savedCode) {
         return true;
       }
     }
-    
+
     // Check if any saved file was deleted
     for (const path of Object.keys(savedFiles)) {
       if (!currentFiles[path]) {
         return true;
       }
     }
-    
+
     return false;
   }, [sandpack.files, lastSavedFiles]);
 
@@ -172,7 +163,7 @@ function InternalEditor({
       sandpack.resetFile(sandpack.activeFile);
       return;
     }
-    
+
     // Reset all files to last saved state
     for (const [path, file] of Object.entries(lastSavedFiles)) {
       sandpack.updateFile(path, file.code);
@@ -200,55 +191,17 @@ function InternalEditor({
   }, [hasChanges, handleSave, onSave]);
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Toolbar */}
-      <EditorToolbar
-        componentDisplayName={componentDisplayName}
-        componentDescription={componentDescription}
-        currentTheme={currentTheme}
-        onThemeChange={onThemeChange}
-        saveStatus={saveStatus}
-        readOnly={readOnly}
-        onReset={handleReset}
-        onSave={handleSave}
-        hasChanges={hasChanges}
-      />
-
-      {/* File Tabs */}
-      <div className="border-b border-border bg-muted/50">
-        <EditorTabs />
-      </div>
-
-      {/* Code Editor */}
-      <div className="flex-1 min-h-0">
-        <SandpackCodeEditor
-          showTabs={false}
-          showLineNumbers
-          showInlineErrors
-          wrapContent
-          readOnly={readOnly}
-          style={{ height: "100%" }}
-        />
-      </div>
-    </div>
-  );
-}
-
-// =============================================================================
-// Preview Panel Component
-// =============================================================================
-
-function PreviewPanel() {
-  return (
-    <div className="h-full w-full p-4 bg-muted/30 rounded-lg flex items-center justify-center">
-      <div className="h-full w-full bg-background rounded-md overflow-hidden shadow-sm border border-border/50">
-        <SandpackPreview
-          style={{ height: "100%", width: "100%" }}
-          showOpenInCodeSandbox={false}
-          showRefreshButton
-        />
-      </div>
-    </div>
+    <EditorToolbar
+      componentDisplayName={componentDisplayName}
+      componentDescription={componentDescription}
+      currentTheme={currentTheme}
+      onThemeChange={onThemeChange}
+      saveStatus={saveStatus}
+      readOnly={readOnly}
+      onReset={handleReset}
+      onSave={handleSave}
+      hasChanges={hasChanges}
+    />
   );
 }
 
@@ -277,7 +230,8 @@ function useSandpackFiles(
   code: string,
   previewCode: string,
   effectiveCss: string,
-  isDark: boolean
+  isDark: boolean,
+  registryDependenciesCode?: Record<string, { code: string; dependencies?: Record<string, string> }>
 ) {
   return useMemo(
     () => ({
@@ -293,8 +247,21 @@ function useSandpackFiles(
         code: TSCONFIG_CODE,
         hidden: true,
       },
+      // Inject registry dependencies
+      ...(registryDependenciesCode
+        ? Object.entries(registryDependenciesCode).reduce(
+          (acc, [name, data]) => ({
+            ...acc,
+            [`/components/ui/${name}.tsx`]: {
+              code: data.code,
+              hidden: true,
+            },
+          }),
+          {}
+        )
+        : {}),
     }),
-    [componentPath, isDark, effectiveCss, code, previewCode]
+    [componentPath, isDark, effectiveCss, code, previewCode, registryDependenciesCode]
   );
 }
 
@@ -313,17 +280,29 @@ function useSandpackOptions(componentPath: string) {
   );
 }
 
-function useSandpackSetup(dependencies?: Record<string, string>) {
+function useSandpackSetup(
+  dependencies?: Record<string, string>,
+  registryDependenciesCode?: Record<string, { code: string; dependencies?: Record<string, string> }>
+) {
   const serializedDeps = JSON.stringify(dependencies);
-  return useMemo(
-    () => ({
+  const serializedRegistryDeps = JSON.stringify(registryDependenciesCode);
+
+  return useMemo(() => {
+    // Collect all NPM dependencies from registry components
+    const registryNpmDeps = registryDependenciesCode
+      ? Object.values(registryDependenciesCode).reduce((acc, component) => {
+        return { ...acc, ...(component.dependencies || {}) };
+      }, {} as Record<string, string>)
+      : {};
+
+    return {
       dependencies: {
         ...DEFAULT_DEPENDENCIES,
+        ...registryNpmDeps,
         ...(dependencies || {}),
       },
-    }),
-    [serializedDeps]
-  );
+    };
+  }, [serializedDeps, serializedRegistryDeps]);
 }
 
 // =============================================================================
@@ -338,6 +317,7 @@ export default function ComponentEditor({
   onSave,
   onCodeChange,
   dependencies,
+  registryDependenciesCode,
   componentName,
   saveStatus = "idle",
   componentDisplayName,
@@ -350,10 +330,10 @@ export default function ComponentEditor({
   const [currentTheme, setCurrentTheme] = useState("default");
   const [generatedCss, setGeneratedCss] = useState(DEFAULT_GLOBAL_CSS);
   const [isThemeManuallySelected, setIsThemeManuallySelected] = useState(false);
-  
+
   // Track last saved files state
   const [lastSavedFiles, setLastSavedFiles] = useState<Record<string, { code: string }> | undefined>(undefined);
-  
+
   const handleThemeChange = useCallback((newTheme: string) => {
     setCurrentTheme(newTheme);
     setGeneratedCss(getThemeCss(newTheme));
@@ -366,9 +346,28 @@ export default function ComponentEditor({
 
   // Sandpack configuration - files should only update when source data changes
   // Sandpack will handle live updates internally when user edits in the editor
-  const files = useSandpackFiles(componentPath, code, previewCode, effectiveCss, isDark);
+  const files = useSandpackFiles(componentPath, code, previewCode, effectiveCss, isDark, registryDependenciesCode);
   const options = useSandpackOptions(componentPath);
-  const customSetup = useSandpackSetup(dependencies);
+  const customSetup = useSandpackSetup(dependencies, registryDependenciesCode);
+
+  // Use a ref to stabilize files - refs don't trigger re-renders, keeping Sandpack's internal state intact
+  // This is critical: when files prop changes, Sandpack resets its internal state, breaking live editing
+  const stableFilesRef = useRef(files);
+  const lastSourceDataRef = useRef<string>("");
+
+  // Create a hash of source data to detect meaningful changes
+  const sourceDataKey = useMemo(() => {
+    return `${componentPath}|${code}|${previewCode}|${effectiveCss}|${isDark}`;
+  }, [componentPath, code, previewCode, effectiveCss, isDark]);
+
+  // Update ref when source data changes - this updates the files object without triggering re-render
+  // Sandpack will sync files via updateFile calls from InternalEditor when needed
+  useEffect(() => {
+    if (lastSourceDataRef.current !== sourceDataKey) {
+      lastSourceDataRef.current = sourceDataKey;
+      stableFilesRef.current = files;
+    }
+  }, [sourceDataKey, files]);
 
   // Initialize last saved files when component data changes
   useEffect(() => {
@@ -384,12 +383,13 @@ export default function ComponentEditor({
 
   // Note: lastSavedFiles is updated in InternalEditor when saveStatus becomes 'saved'
 
-  // Key for forcing SandpackProvider remount when theme changes
-  // Don't include source data in key - let Sandpack handle file updates internally
+  // Key for SandpackProvider - keep it stable to preserve internal state
+  // Only remount when theme changes, not when files change
+  // Sandpack will handle file updates internally for live editing
   const providerKey = `sandpack-${currentTheme}-${isDark ? "dark" : "light"}`;
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full flex flex-col">
       <SandpackProvider
         key={providerKey}
         template="react-ts"
@@ -399,32 +399,45 @@ export default function ComponentEditor({
         customSetup={customSetup}
         style={{ height: "100%", display: "flex", flexDirection: "column" }}
       >
-        <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0">
+        {/* Toolbar - outside SandpackLayout but inside SandpackProvider */}
+        <InternalToolbar
+          componentDisplayName={componentDisplayName}
+          componentDescription={componentDescription}
+          currentTheme={currentTheme}
+          onThemeChange={handleThemeChange}
+          saveStatus={saveStatus}
+          readOnly={readOnly}
+          onSave={onSave}
+          onCodeChange={onCodeChange}
+          lastSavedFiles={lastSavedFiles}
+          onLastSavedUpdate={setLastSavedFiles}
+        />
+
+        {/* Editor and Preview using SandpackLayout for proper live updates */}
+        <SandpackLayout style={{ flex: 1, minHeight: 0, display: "flex" }}>
           {/* Editor Panel */}
-          <ResizablePanel defaultSize={50} minSize={25}>
-            <InternalEditor
-              componentPath={componentPath}
-              initialCode={code}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+            <SandpackCodeEditor
+              showTabs
+              showLineNumbers
+              showInlineErrors
+              wrapContent
               readOnly={readOnly}
-              saveStatus={saveStatus}
-              currentTheme={currentTheme}
-              onThemeChange={handleThemeChange}
-              onSave={onSave}
-              onCodeChange={onCodeChange}
-              componentDisplayName={componentDisplayName}
-              componentDescription={componentDescription}
-              lastSavedFiles={lastSavedFiles}
-              onLastSavedUpdate={setLastSavedFiles}
+              style={{ flex: 1 }}
             />
-          </ResizablePanel>
+          </div>
 
-          <ResizableHandle withHandle />
-
-          {/* Preview Panel */}
-          <ResizablePanel defaultSize={50} minSize={25}>
-            <PreviewPanel />
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          {/* Preview Panel with styling */}
+          <div className="flex-1 p-4 bg-muted/30 flex items-center justify-center" style={{ minWidth: 0 }}>
+            <div className="h-full w-full bg-background rounded-lg overflow-hidden shadow-sm border border-border/50">
+              <SandpackPreview
+                style={{ height: "100%", width: "100%" }}
+                showOpenInCodeSandbox={false}
+                showRefreshButton
+              />
+            </div>
+          </div>
+        </SandpackLayout>
       </SandpackProvider>
     </div>
   );
