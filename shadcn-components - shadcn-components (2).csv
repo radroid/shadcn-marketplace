@@ -1,4 +1,4 @@
-"componentId","name","description","category","tags","author","version","code","previewCode","dependencies","files","createdAt","updatedAt","isPublic"
+"componentId","name","description","category","tags","author","version","code","previewCode","dependencies","files","createdAt","updatedAt","isPublic","registryDependencies"
 "accordion","Accordion","Shadcn ui: Accordion","ui","[""ui"",""shadcn""]","shadcn","1.0.0","`""use client""
 
 import * as React from ""react""
@@ -125,7 +125,7 @@ export function AccordionDemo() {
       </AccordionItem>
     </Accordion>
   )
-}","[""@radix-ui/react-accordion"",""lucide-react""]","[{""path"":""ui/accordion.tsx"",""type"":""registry:ui""}]","1763396686194","1763396686194","TRUE"
+}","[""@radix-ui/react-accordion"",""lucide-react""]","[{""path"":""ui/accordion.tsx"",""type"":""registry:ui""}]","1763396686194","1763396686194","TRUE","[]"
 "alert","Alert","Shadcn ui: Alert","ui","[""ui"",""shadcn""]","shadcn","1.0.0","`""use client""
 
 import * as React from ""react""
@@ -318,7 +318,7 @@ export function AlertDialogDemo() {
     </AlertDialog>
   )
 }
-","[""@radix-ui/react-alert-dialog""]","[{""path"":""ui/alert.tsx"",""type"":""registry:ui""}]","1763396686331","1763396686331","TRUE"
+","[""@radix-ui/react-alert-dialog""]","[{""path"":""ui/alert.tsx"",""type"":""registry:ui""}]","1763396686331","1763396686331","TRUE","[""alert-dialog"",""button""]"
 "alert-dialog","Alert Dialog","Shadcn ui: Alert Dialog","ui","[""ui"",""shadcn""]","shadcn","1.0.0","`import * as React from ""react""
 import { cva, type VariantProps } from ""class-variance-authority""
 
@@ -423,7 +423,7 @@ export function AlertDemo() {
       </Alert>
     </div>
   )
-}","[""class-variance-authority"",""lucide-react""]","[{""path"":""ui/alert-dialog.tsx"",""type"":""registry:ui""}]","1763396686479","1763396686479","TRUE"
+}","[""class-variance-authority"",""lucide-react""]","[{""path"":""ui/alert-dialog.tsx"",""type"":""registry:ui""}]","1763396686479","1763396686479","TRUE","[""alert""]"
 "aspect-ratio","Aspect Ratio","Shadcn ui: Aspect Ratio","ui","[""ui"",""shadcn""]","shadcn","1.0.0","`""use client""
 
 import * as AspectRatioPrimitive from ""@radix-ui/react-aspect-ratio""
@@ -450,7 +450,7 @@ export function AspectRatioDemo() {
       />
     </AspectRatio>
   )
-}","[""@radix-ui/react-aspect-ratio""]","[{""path"":""ui/aspect-ratio.tsx"",""type"":""registry:ui""}]","1763396686616","1763396686616","TRUE"
+}","[""@radix-ui/react-aspect-ratio""]","[{""path"":""ui/aspect-ratio.tsx"",""type"":""registry:ui""}]","1763396686616","1763396686616","TRUE","[]"
 "avatar","Avatar","Shadcn ui: Avatar","ui","[""ui"",""shadcn""]","shadcn","1.0.0","`""use client""
 
 import * as React from ""react""
@@ -547,7 +547,7 @@ export function AvatarDemo() {
     </div>
   )
 }
-","[""@radix-ui/react-avatar""]","[{""path"":""ui/avatar.tsx"",""type"":""registry:ui""}]","1763396686752","1763396686752","TRUE"
+","[""@radix-ui/react-avatar""]","[{""path"":""ui/avatar.tsx"",""type"":""registry:ui""}]","1763396686752","1763396686752","TRUE","[]"
 "badge","Badge","Shadcn ui: Badge","ui","[""ui"",""shadcn""]","shadcn","1.0.0","`import * as React from ""react""
 import { Slot } from ""@radix-ui/react-slot""
 import { cva, type VariantProps } from ""class-variance-authority""
@@ -634,7 +634,7 @@ export function BadgeDemo() {
     </div>
   )
 }
-","[""@radix-ui/react-slot"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/badge.tsx"",""type"":""registry:ui""}]","1763396686888","1763396686888","TRUE"
+","[""@radix-ui/react-slot"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/badge.tsx"",""type"":""registry:ui""}]","1763396686888","1763396686888","TRUE","[]"
 "breadcrumb","Breadcrumb","Shadcn ui: Breadcrumb","ui","[""ui"",""shadcn""]","shadcn","1.0.0","`import * as React from ""react""
 import { Slot } from ""@radix-ui/react-slot""
 import { ChevronRight, MoreHorizontal } from ""lucide-react""
@@ -798,7 +798,7 @@ export function BreadcrumbDemo() {
       </BreadcrumbList>
     </Breadcrumb>
   )
-}","[""@radix-ui/react-slot"",""lucide-react""]","[{""path"":""ui/breadcrumb.tsx"",""type"":""registry:ui""}]","1763396687032","1763396687032","TRUE"
+}","[""@radix-ui/react-slot"",""lucide-react""]","[{""path"":""ui/breadcrumb.tsx"",""type"":""registry:ui""}]","1763396687032","1763396687032","TRUE","[""dropdown-menu""]"
 "button","Button","Shadcn ui: Button","ui","[""ui"",""shadcn""]","shadcn","1.0.0","`import * as React from ""react""
 import { Slot } from ""@radix-ui/react-slot""
 import { cva, type VariantProps } from ""class-variance-authority""
@@ -872,7 +872,7 @@ export function ButtonDemo() {
       </Button>
     </div>
   )
-}","[""@radix-ui/react-slot"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/button.tsx"",""type"":""registry:ui""}]","1763396687167","1763396687167","TRUE"
+}","[""@radix-ui/react-slot"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/button.tsx"",""type"":""registry:ui""}]","1763396687167","1763396687167","TRUE","[]"
 "button-group","Button Group","Shadcn ui: Button Group","ui","[""ui"",""shadcn""]","shadcn","1.0.0","`import { Slot } from ""@radix-ui/react-slot""
 import { cva, type VariantProps } from ""class-variance-authority""
 
@@ -1069,7 +1069,7 @@ export function ButtonGroupDemo() {
       </ButtonGroup>
     </ButtonGroup>
   )
-}","[""@radix-ui/react-slot"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/button-group.tsx"",""type"":""registry:ui""}]","1763396687313","1763396687313","TRUE"
+}","[""@radix-ui/react-slot"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/button-group.tsx"",""type"":""registry:ui""}]","1763396687313","1763396687313","TRUE","[""button"",""dropdown-menu"",""separator""]"
 "calendar","Calendar","Shadcn ui: Calendar","ui","[""ui"",""shadcn""]","shadcn","1.0.0","`""use client""
 
 import * as React from ""react""
@@ -1304,7 +1304,7 @@ export function CalendarDemo() {
       captionLayout=""dropdown""
     />
   )
-}","[""lucide-react"",""react-day-picker""]","[{""path"":""ui/calendar.tsx"",""type"":""registry:ui""}]","1763396687452","1763396687452","TRUE"
+}","[""lucide-react"",""react-day-picker""]","[{""path"":""ui/calendar.tsx"",""type"":""registry:ui""}]","1763396687452","1763396687452","TRUE","[""button""]"
 "card","Card","Shadcn ui: Card","ui","[""ui"",""shadcn""]","shadcn","1.0.0","`import * as React from ""react""
 
 import { cn } from ""@/lib/utils""
@@ -1459,7 +1459,7 @@ export function CardDemo() {
       </CardFooter>
     </Card>
   )
-}","[]","[{""path"":""ui/card.tsx"",""type"":""registry:ui""}]","1763396687830","1763396687830","TRUE"
+}","[]","[{""path"":""ui/card.tsx"",""type"":""registry:ui""}]","1763396687830","1763396687830","TRUE","[""button"",""input"",""label""]"
 "carousel","Carousel","Shadcn ui: Carousel","ui","[""ui"",""shadcn""]","shadcn","1.0.0",,"import * as React from ""react""
 
 import { Card, CardContent } from ""@/components/ui/card""
@@ -1491,7 +1491,7 @@ export function CarouselDemo() {
       <CarouselNext />
     </Carousel>
   )
-}","[]","[{""path"":""ui/carousel.tsx"",""type"":""registry:ui""}]","1763396687967","1763396687967","TRUE"
+}","[]","[{""path"":""ui/carousel.tsx"",""type"":""registry:ui""}]","1763396687967","1763396687967","TRUE","[""card""]"
 "chart","Chart","Shadcn ui: Chart","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -1862,7 +1862,7 @@ export function MyChart() {
       </BarChart>
     </ChartContainer>
   )
-}","[""recharts""]","[{""path"":""ui/chart.tsx"",""type"":""registry:ui""}]","1763396688115","1763396688115","TRUE"
+}","[""recharts""]","[{""path"":""ui/chart.tsx"",""type"":""registry:ui""}]","1763396688115","1763396688115","TRUE","[]"
 "checkbox","Checkbox","Shadcn ui: Checkbox","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -1937,7 +1937,7 @@ export function CheckboxDemo() {
       </Label>
     </div>
   )
-}","[""@radix-ui/react-checkbox"",""lucide-react""]","[{""path"":""ui/checkbox.tsx"",""type"":""registry:ui""}]","1763396688258","1763396688258","TRUE"
+}","[""@radix-ui/react-checkbox"",""lucide-react""]","[{""path"":""ui/checkbox.tsx"",""type"":""registry:ui""}]","1763396688258","1763396688258","TRUE","[""label""]"
 "collapsible","Collapsible","Shadcn ui: Collapsible","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as CollapsiblePrimitive from ""@radix-ui/react-collapsible""
@@ -2017,7 +2017,7 @@ export function CollapsibleDemo() {
     </Collapsible>
   )
 }
-","[""@radix-ui/react-collapsible"",""lucide-react""]","[{""path"":""ui/collapsible.tsx"",""type"":""registry:ui""}]","1763396688390","1763396688390","TRUE"
+","[""@radix-ui/react-collapsible"",""lucide-react""]","[{""path"":""ui/collapsible.tsx"",""type"":""registry:ui""}]","1763396688390","1763396688390","TRUE","[""button""]"
 "command","Command","Shadcn ui: Command","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -2264,7 +2264,7 @@ export function CommandDemo() {
     </Command>
   )
 }
-","[""cmdk"",""lucide-react""]","[{""path"":""ui/command.tsx"",""type"":""registry:ui""}]","1763396688546","1763396688546","TRUE"
+","[""cmdk"",""lucide-react""]","[{""path"":""ui/command.tsx"",""type"":""registry:ui""}]","1763396688546","1763396688546","TRUE","[""dialog""]"
 "context-menu","Context Menu","Shadcn ui: Context Menu","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -2580,7 +2580,7 @@ export function ContextMenuDemo() {
       </ContextMenuContent>
     </ContextMenu>
   )
-}","[""@radix-ui/react-context-menu"",""lucide-react""]","[{""path"":""ui/context-menu.tsx"",""type"":""registry:ui""}]","1763396688693","1763396688693","TRUE"
+}","[""@radix-ui/react-context-menu"",""lucide-react""]","[{""path"":""ui/context-menu.tsx"",""type"":""registry:ui""}]","1763396688693","1763396688693","TRUE","[]"
 "dialog","Dialog","Shadcn ui: Dialog","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -2774,7 +2774,7 @@ export function DialogDemo() {
     </Dialog>
   )
 }
-","[""@radix-ui/react-dialog"",""lucide-react""]","[{""path"":""ui/dialog.tsx"",""type"":""registry:ui""}]","1763396688833","1763396688833","TRUE"
+","[""@radix-ui/react-dialog"",""lucide-react""]","[{""path"":""ui/dialog.tsx"",""type"":""registry:ui""}]","1763396688833","1763396688833","TRUE","[""button"",""input"",""label""]"
 "drawer","Drawer","Shadcn ui: Drawer","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -3046,7 +3046,7 @@ export function DrawerDemo() {
     </Drawer>
   )
 }
-","[""lucide-react"",""recharts"",""vaul""]","[{""path"":""ui/drawer.tsx"",""type"":""registry:ui""}]","1763396688977","1763396688977","TRUE"
+","[""lucide-react"",""recharts"",""vaul""]","[{""path"":""ui/drawer.tsx"",""type"":""registry:ui""}]","1763396688977","1763396688977","TRUE","[""button""]"
 "dropdown-menu","Dropdown Menu","Shadcn ui: Dropdown Menu","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -3378,7 +3378,7 @@ export function DropdownMenuDemo() {
     </DropdownMenu>
   )
 }
-","[""@radix-ui/react-dropdown-menu"",""lucide-react""]","[{""path"":""ui/dropdown-menu.tsx"",""type"":""registry:ui""}]","1763396689166","1763396689166","TRUE"
+","[""@radix-ui/react-dropdown-menu"",""lucide-react""]","[{""path"":""ui/dropdown-menu.tsx"",""type"":""registry:ui""}]","1763396689166","1763396689166","TRUE","[""button""]"
 "empty","Empty","Shadcn ui: Empty","ui","[""ui"",""shadcn""]","shadcn","1.0.0","import { cva, type VariantProps } from ""class-variance-authority""
 
 import { cn } from ""@/lib/utils""
@@ -3528,7 +3528,7 @@ export function EmptyDemo() {
     </Empty>
   )
 }
-","[""@tabler/icons-react"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/empty.tsx"",""type"":""registry:ui""}]","1763396689306","1763396689306","TRUE"
+","[""@tabler/icons-react"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/empty.tsx"",""type"":""registry:ui""}]","1763396689306","1763396689306","TRUE","[""button""]"
 "field","Field","Shadcn ui: Field","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import { useMemo } from ""react""
@@ -3928,7 +3928,7 @@ export function FieldDemo() {
     </div>
   )
 }
-","[""class-variance-authority""]","[{""path"":""ui/field.tsx"",""type"":""registry:ui""}]","1763396689489","1763396689489","TRUE"
+","[""class-variance-authority""]","[{""path"":""ui/field.tsx"",""type"":""registry:ui""}]","1763396689489","1763396689489","TRUE","[""button"",""checkbox"",""input"",""label"",""select"",""separator"",""textarea""]"
 "form","Form","Shadcn ui: Form","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -4111,7 +4111,7 @@ export {
       <FormMessage />
     </FormItem>
   )}
-/>","[""@radix-ui/react-label"",""@radix-ui/react-slot"",""react-hook-form""]","[{""path"":""ui/form.tsx"",""type"":""registry:ui""}]","1763396689634","1763396689634","TRUE"
+/>","[""@radix-ui/react-label"",""@radix-ui/react-slot"",""react-hook-form""]","[{""path"":""ui/form.tsx"",""type"":""registry:ui""}]","1763396689634","1763396689634","TRUE","[""label""]"
 "hover-card","Hover Card","Shadcn ui: Hover Card","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -4196,7 +4196,7 @@ export function HoverCardDemo() {
     </HoverCard>
   )
 }
-","[""@radix-ui/react-hover-card"",""lucide-react""]","[{""path"":""ui/hover-card.tsx"",""type"":""registry:ui""}]","1763396689790","1763396689790","TRUE"
+","[""@radix-ui/react-hover-card"",""lucide-react""]","[{""path"":""ui/hover-card.tsx"",""type"":""registry:ui""}]","1763396689790","1763396689790","TRUE","[""avatar"",""button""]"
 "input","Input","Shadcn ui: Input","ui","[""ui"",""shadcn""]","shadcn","1.0.0","import * as React from ""react""
 
 import { cn } from ""@/lib/utils""
@@ -4223,7 +4223,7 @@ export { Input }
 export function InputDemo() {
   return <Input type=""email"" placeholder=""Email"" />
 }
-","[]","[{""path"":""ui/input.tsx"",""type"":""registry:ui""}]","1763396689934","1763396689934","TRUE"
+","[]","[{""path"":""ui/input.tsx"",""type"":""registry:ui""}]","1763396689934","1763396689934","TRUE","[]"
 "input-group","Input Group","Shadcn ui: Input Group","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -4492,7 +4492,7 @@ export function InputGroupDemo() {
     </div>
   )
 }
-","[""@tabler/icons-react"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/input-group.tsx"",""type"":""registry:ui""}]","1763396690117","1763396690117","TRUE"
+","[""@tabler/icons-react"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/input-group.tsx"",""type"":""registry:ui""}]","1763396690117","1763396690117","TRUE","[""button"",""dropdown-menu"",""input"",""separator"",""textarea"",""tooltip""]"
 "input-otp","Input Otp","Shadcn ui: Input Otp","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -4594,7 +4594,7 @@ export function InputOTPDemo() {
     </InputOTP>
   )
 }
-","[""input-otp"",""lucide-react""]","[{""path"":""ui/input-otp.tsx"",""type"":""registry:ui""}]","1763396690272","1763396690272","TRUE"
+","[""input-otp"",""lucide-react""]","[{""path"":""ui/input-otp.tsx"",""type"":""registry:ui""}]","1763396690272","1763396690272","TRUE","[]"
 "item","Item","Shadcn ui: Item","ui","[""ui"",""shadcn""]","shadcn","1.0.0","import * as React from ""react""
 import { Slot } from ""@radix-ui/react-slot""
 import { cva, type VariantProps } from ""class-variance-authority""
@@ -4832,7 +4832,7 @@ export function ItemDemo() {
     </div>
   )
 }
-","[""@radix-ui/react-slot"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/item.tsx"",""type"":""registry:ui""}]","1763396690425","1763396690425","TRUE"
+","[""@radix-ui/react-slot"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/item.tsx"",""type"":""registry:ui""}]","1763396690425","1763396690425","TRUE","[""button"",""separator""]"
 "kbd","Kbd","Shadcn ui: Kbd","ui","[""ui"",""shadcn""]","shadcn","1.0.0","import { cn } from ""@/lib/utils""
 
 function Kbd({ className, ...props }: React.ComponentProps<""kbd"">) {
@@ -4879,7 +4879,7 @@ export function KbdDemo() {
       </KbdGroup>
     </div>
   )
-}","[]","[{""path"":""ui/kbd.tsx"",""type"":""registry:ui""}]","1763396690574","1763396690574","TRUE"
+}","[]","[{""path"":""ui/kbd.tsx"",""type"":""registry:ui""}]","1763396690574","1763396690574","TRUE","[]"
 "label","Label","Shadcn ui: Label","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -4917,7 +4917,7 @@ export function LabelDemo() {
     </div>
   )
 }
-","[""@radix-ui/react-label""]","[{""path"":""ui/label.tsx"",""type"":""registry:ui""}]","1763396691495","1763396691495","TRUE"
+","[""@radix-ui/react-label""]","[{""path"":""ui/label.tsx"",""type"":""registry:ui""}]","1763396691495","1763396691495","TRUE","[""checkbox""]"
 "menubar","Menubar","Shadcn ui: Menubar","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -5301,7 +5301,7 @@ export function MenubarDemo() {
     </Menubar>
   )
 }
-","[""@radix-ui/react-menubar"",""lucide-react""]","[{""path"":""ui/menubar.tsx"",""type"":""registry:ui""}]","1763396692404","1763396692404","TRUE"
+","[""@radix-ui/react-menubar"",""lucide-react""]","[{""path"":""ui/menubar.tsx"",""type"":""registry:ui""}]","1763396692404","1763396692404","TRUE","[]"
 "navigation-menu","Navigation Menu","Shadcn ui: Navigation Menu","ui","[""ui"",""shadcn""]","shadcn","1.0.0","import * as React from ""react""
 import * as NavigationMenuPrimitive from ""@radix-ui/react-navigation-menu""
 import { cva } from ""class-variance-authority""
@@ -5685,7 +5685,7 @@ function ListItem({
     </li>
   )
 }
-","[""@radix-ui/react-navigation-menu"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/navigation-menu.tsx"",""type"":""registry:ui""}]","1763396692558","1763396692558","TRUE"
+","[""@radix-ui/react-navigation-menu"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/navigation-menu.tsx"",""type"":""registry:ui""}]","1763396692558","1763396692558","TRUE","[]"
 "pagination","Pagination","Shadcn ui: Pagination","ui","[""ui"",""shadcn""]","shadcn","1.0.0","import * as React from ""react""
 import {
   ChevronLeftIcon,
@@ -5851,7 +5851,7 @@ export function PaginationDemo() {
     </Pagination>
   )
 }
-","[""lucide-react""]","[{""path"":""ui/pagination.tsx"",""type"":""registry:ui""}]","1763396692707","1763396692707","TRUE"
+","[""lucide-react""]","[{""path"":""ui/pagination.tsx"",""type"":""registry:ui""}]","1763396692707","1763396692707","TRUE","[""button""]"
 "popover","Popover","Shadcn ui: Popover","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -5962,7 +5962,7 @@ export function PopoverDemo() {
     </Popover>
   )
 }
-","[""@radix-ui/react-popover""]","[{""path"":""ui/popover.tsx"",""type"":""registry:ui""}]","1763396692893","1763396692893","TRUE"
+","[""@radix-ui/react-popover""]","[{""path"":""ui/popover.tsx"",""type"":""registry:ui""}]","1763396692893","1763396692893","TRUE","[""button"",""input"",""label""]"
 "progress","Progress","Shadcn ui: Progress","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -6010,7 +6010,7 @@ export function ProgressDemo() {
 
   return <Progress value={progress} className=""w-[60%]"" />
 }
-","[""@radix-ui/react-progress""]","[{""path"":""ui/progress.tsx"",""type"":""registry:ui""}]","1763396693047","1763396693047","TRUE"
+","[""@radix-ui/react-progress""]","[{""path"":""ui/progress.tsx"",""type"":""registry:ui""}]","1763396693047","1763396693047","TRUE","[]"
 "radio-group","Radio Group","Shadcn ui: Radio Group","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -6080,7 +6080,7 @@ export function RadioGroupDemo() {
     </RadioGroup>
   )
 }
-","[""@radix-ui/react-radio-group"",""lucide-react""]","[{""path"":""ui/radio-group.tsx"",""type"":""registry:ui""}]","1763396693208","1763396693208","TRUE"
+","[""@radix-ui/react-radio-group"",""lucide-react""]","[{""path"":""ui/radio-group.tsx"",""type"":""registry:ui""}]","1763396693208","1763396693208","TRUE","[""label""]"
 "resizable","Resizable","Shadcn ui: Resizable","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -6173,7 +6173,7 @@ export function ResizableDemo() {
     </ResizablePanelGroup>
   )
 }
-","[""lucide-react"",""react-resizable-panels""]","[{""path"":""ui/resizable.tsx"",""type"":""registry:ui""}]","1763396693365","1763396693365","TRUE"
+","[""lucide-react"",""react-resizable-panels""]","[{""path"":""ui/resizable.tsx"",""type"":""registry:ui""}]","1763396693365","1763396693365","TRUE","[]"
 "scroll-area","Scroll Area","Shadcn ui: Scroll Area","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -6256,7 +6256,7 @@ export function ScrollAreaDemo() {
     </ScrollArea>
   )
 }
-","[""@radix-ui/react-scroll-area""]","[{""path"":""ui/scroll-area.tsx"",""type"":""registry:ui""}]","1763396693535","1763396693535","TRUE"
+","[""@radix-ui/react-scroll-area""]","[{""path"":""ui/scroll-area.tsx"",""type"":""registry:ui""}]","1763396693535","1763396693535","TRUE","[""separator""]"
 "select","Select","Shadcn ui: Select","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -6475,7 +6475,7 @@ export function SelectDemo() {
     </Select>
   )
 }
-","[""@radix-ui/react-select"",""lucide-react""]","[{""path"":""ui/select.tsx"",""type"":""registry:ui""}]","1763396693680","1763396693680","TRUE"
+","[""@radix-ui/react-select"",""lucide-react""]","[{""path"":""ui/select.tsx"",""type"":""registry:ui""}]","1763396693680","1763396693680","TRUE","[]"
 "separator","Separator","Shadcn ui: Separator","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -6526,7 +6526,7 @@ export function SeparatorDemo() {
     </div>
   )
 }
-","[""@radix-ui/react-separator""]","[{""path"":""ui/separator.tsx"",""type"":""registry:ui""}]","1763396693845","1763396693845","TRUE"
+","[""@radix-ui/react-separator""]","[{""path"":""ui/separator.tsx"",""type"":""registry:ui""}]","1763396693845","1763396693845","TRUE","[]"
 "sheet","Sheet","Shadcn ui: Sheet","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -6713,7 +6713,7 @@ export function SheetDemo() {
     </Sheet>
   )
 }
-","[""@radix-ui/react-dialog"",""lucide-react""]","[{""path"":""ui/sheet.tsx"",""type"":""registry:ui""}]","1763396694003","1763396694003","TRUE"
+","[""@radix-ui/react-dialog"",""lucide-react""]","[{""path"":""ui/sheet.tsx"",""type"":""registry:ui""}]","1763396694003","1763396694003","TRUE","[""button"",""input"",""label""]"
 "skeleton","Skeleton","Shadcn ui: Skeleton","ui","[""ui"",""shadcn""]","shadcn","1.0.0","import { cn } from ""@/lib/utils""
 
 function Skeleton({ className, ...props }: React.ComponentProps<""div"">) {
@@ -6740,7 +6740,7 @@ export function SkeletonDemo() {
     </div>
   )
 }
-","[]","[{""path"":""ui/skeleton.tsx"",""type"":""registry:ui""}]","1763396694395","1763396694395","TRUE"
+","[]","[{""path"":""ui/skeleton.tsx"",""type"":""registry:ui""}]","1763396694395","1763396694395","TRUE","[]"
 "slider","Slider","Shadcn ui: Slider","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -6820,7 +6820,7 @@ export function SliderDemo({ className, ...props }: SliderProps) {
     />
   )
 }
-","[""@radix-ui/react-slider""]","[{""path"":""ui/slider.tsx"",""type"":""registry:ui""}]","1763396694542","1763396694542","TRUE"
+","[""@radix-ui/react-slider""]","[{""path"":""ui/slider.tsx"",""type"":""registry:ui""}]","1763396694542","1763396694542","TRUE","[]"
 "sonner","Sonner","Shadcn ui: Sonner","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import {
@@ -6885,7 +6885,7 @@ export function SonnerDemo() {
     </Button>
   )
 }
-","[""lucide-react"",""next-themes"",""sonner""]","[{""path"":""ui/sonner.tsx"",""type"":""registry:ui""}]","1763396694696","1763396694696","TRUE"
+","[""lucide-react"",""next-themes"",""sonner""]","[{""path"":""ui/sonner.tsx"",""type"":""registry:ui""}]","1763396694696","1763396694696","TRUE","[""button""]"
 "spinner","Spinner","Shadcn ui: Spinner","ui","[""ui"",""shadcn""]","shadcn","1.0.0","import { Loader2Icon } from ""lucide-react""
 
 import { cn } from ""@/lib/utils""
@@ -6927,7 +6927,7 @@ export function SpinnerDemo() {
     </div>
   )
 }
-","[""lucide-react""]","[{""path"":""ui/spinner.tsx"",""type"":""registry:ui""}]","1763396694843","1763396694843","TRUE"
+","[""lucide-react""]","[{""path"":""ui/spinner.tsx"",""type"":""registry:ui""}]","1763396694843","1763396694843","TRUE","[""item""]"
 "switch","Switch","Shadcn ui: Switch","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -6970,7 +6970,7 @@ export function SwitchDemo() {
     </div>
   )
 }
-","[""@radix-ui/react-switch""]","[{""path"":""ui/switch.tsx"",""type"":""registry:ui""}]","1763396694999","1763396694999","TRUE"
+","[""@radix-ui/react-switch""]","[{""path"":""ui/switch.tsx"",""type"":""registry:ui""}]","1763396694999","1763396694999","TRUE","[""label""]"
 "table","Table","Shadcn ui: Table","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -7174,7 +7174,7 @@ export function TableDemo() {
     </Table>
   )
 }
-","[]","[{""path"":""ui/table.tsx"",""type"":""registry:ui""}]","1763396695159","1763396695159","TRUE"
+","[]","[{""path"":""ui/table.tsx"",""type"":""registry:ui""}]","1763396695159","1763396695159","TRUE","[]"
 "tabs","Tabs","Shadcn ui: Tabs","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -7321,7 +7321,7 @@ export function TabsDemo() {
     </div>
   )
 }
-","[""@radix-ui/react-tabs"",""lucide-react""]","[{""path"":""ui/tabs.tsx"",""type"":""registry:ui""}]","1763396695325","1763396695325","TRUE"
+","[""@radix-ui/react-tabs"",""lucide-react""]","[{""path"":""ui/tabs.tsx"",""type"":""registry:ui""}]","1763396695325","1763396695325","TRUE","[""button"",""card"",""input"",""label""]"
 "textarea","Textarea","Shadcn ui: Textarea","ui","[""ui"",""shadcn""]","shadcn","1.0.0","import * as React from ""react""
 
 import { cn } from ""@/lib/utils""
@@ -7345,7 +7345,7 @@ export { Textarea }
 export function TextareaDemo() {
   return <Textarea placeholder=""Type your message here."" />
 }
-","[]","[{""path"":""ui/textarea.tsx"",""type"":""registry:ui""}]","1763396695506","1763396695506","TRUE"
+","[]","[{""path"":""ui/textarea.tsx"",""type"":""registry:ui""}]","1763396695506","1763396695506","TRUE","[]"
 "toggle","Toggle","Shadcn ui: Toggle","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -7410,7 +7410,7 @@ export function ToggleDemo() {
     </Toggle>
   )
 }
-","[""@radix-ui/react-toggle"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/toggle.tsx"",""type"":""registry:ui""}]","1763396695847","1763396695847","TRUE"
+","[""@radix-ui/react-toggle"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/toggle.tsx"",""type"":""registry:ui""}]","1763396695847","1763396695847","TRUE","[]"
 "toggle-group","Toggle Group","Shadcn ui: Toggle Group","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -7531,7 +7531,7 @@ export function ToggleGroupSpacing() {
     </ToggleGroup>
   )
 }
-","[""@radix-ui/react-toggle-group"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/toggle-group.tsx"",""type"":""registry:ui""}]","1763396696005","1763396696005","TRUE"
+","[""@radix-ui/react-toggle-group"",""class-variance-authority"",""lucide-react""]","[{""path"":""ui/toggle-group.tsx"",""type"":""registry:ui""}]","1763396696005","1763396696005","TRUE","[""toggle""]"
 "tooltip","Tooltip","Shadcn ui: Tooltip","ui","[""ui"",""shadcn""]","shadcn","1.0.0","""use client""
 
 import * as React from ""react""
@@ -7612,4 +7612,4 @@ export function TooltipDemo() {
     </Tooltip>
   )
 }
-","[""@radix-ui/react-tooltip""]","[{""path"":""ui/tooltip.tsx"",""type"":""registry:ui""}]","1763396696159","1763396696159","TRUE"
+","[""@radix-ui/react-tooltip""]","[{""path"":""ui/tooltip.tsx"",""type"":""registry:ui""}]","1763396696159","1763396696159","TRUE","[""button""]"

@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "import-csv": "tsx scripts/import-csv.ts",
-    "update-dependencies": "tsx scripts/update-dependencies.ts"
+    "deploy-to-convex": "tsx scripts/deploy-to-convex.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.35.5",
