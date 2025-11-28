@@ -15,6 +15,7 @@ interface EditorToolbarProps {
   onReset: () => void;
   onSave: () => void;
   hasChanges?: boolean;
+  globalCss?: string;
 }
 
 export function EditorToolbar({
@@ -27,6 +28,7 @@ export function EditorToolbar({
   onReset,
   onSave,
   hasChanges = false,
+  globalCss,
 }: EditorToolbarProps) {
   return (
     <div className="bg-muted/50 border-b border-border shrink-0">
@@ -50,6 +52,7 @@ export function EditorToolbar({
               <ThemeSelector
                 currentTheme={currentTheme}
                 onThemeChange={onThemeChange}
+                globalCss={globalCss}
               />
             )}
             <SaveStatusIndicator status={saveStatus} hasChanges={hasChanges} />

@@ -112,3 +112,82 @@ body {
 }
 
 export const DEFAULT_GLOBAL_CSS = getThemeCss("default");
+
+/**
+ * Detects which preset theme matches the given CSS string.
+ * Returns the theme name if a match is found, or "custom" if no match.
+ */
+export function detectThemeFromCss(css: string): string {
+  if (!css || css.trim().length === 0) {
+    return "default";
+  }
+
+  // Normalize the CSS by removing whitespace and comments
+  const normalizeCss = (str: string): string => {
+    return str
+      .replace(/\/\*[\s\S]*?\*\//g, "") // Remove comments
+      .replace(/\s+/g, " ") // Normalize whitespace
+      .trim();
+  };
+
+  const normalizedInput = normalizeCss(css);
+
+  // Check each theme in the registry
+  for (const theme of registry.items) {
+    if (theme.type !== "registry:style") continue;
+
+    const themeCss = getThemeCss(theme.name);
+    const normalizedTheme = normalizeCss(themeCss);
+
+    // Compare the normalized CSS strings
+    // We'll do a more lenient comparison - check if key CSS variables match
+    if (normalizedInput === normalizedTheme) {
+      return theme.name;
+    }
+
+    // More lenient matching: extract key CSS variables and compare
+    const extractKeyVars = (cssStr: string): Map<string, string> => {
+      const vars = new Map<string, string>();
+      const varRegex = /--([^:]+):\s*([^;]+);/g;
+      let match;
+      while ((match = varRegex.exec(cssStr)) !== null) {
+        const key = match[1].trim();
+        const value = match[2].trim();
+        // Only track important color variables
+        if (
+          key.includes("background") ||
+          key.includes("foreground") ||
+          key.includes("primary") ||
+          key.includes("secondary") ||
+          key.includes("muted") ||
+          key.includes("accent") ||
+          key.includes("destructive") ||
+          key.includes("border") ||
+          key.includes("ring")
+        ) {
+          vars.set(key, normalizeCss(value));
+        }
+      }
+      return vars;
+    };
+
+    const inputVars = extractKeyVars(normalizedInput);
+    const themeVars = extractKeyVars(normalizedTheme);
+
+    // Check if all key variables match
+    if (inputVars.size > 0 && inputVars.size === themeVars.size) {
+      let matches = 0;
+      for (const [key, value] of inputVars.entries()) {
+        if (themeVars.get(key) === value) {
+          matches++;
+        }
+      }
+      // If 90% or more of the key variables match, consider it a match
+      if (matches / inputVars.size >= 0.9) {
+        return theme.name;
+      }
+    }
+  }
+
+  return "custom";
+}

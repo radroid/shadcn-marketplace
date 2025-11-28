@@ -212,6 +212,7 @@ interface InternalToolbarProps {
   componentDescription?: string;
   lastSavedFiles?: Record<string, { code: string }>;
   onLastSavedUpdate?: (files: Record<string, { code: string }>) => void;
+  globalCss?: string;
 }
 
 function InternalToolbar({
@@ -225,8 +226,19 @@ function InternalToolbar({
   componentDescription,
   lastSavedFiles,
   onLastSavedUpdate,
+  globalCss: propGlobalCss,
 }: InternalToolbarProps) {
   const { sandpack } = useSandpack();
+  
+  // Get globalCss from sandpack files if not provided as prop
+  const globalCss = useMemo(() => {
+    if (propGlobalCss) return propGlobalCss;
+    const cssFile = sandpack.files["/styles/globals.css"];
+    if (cssFile) {
+      return typeof cssFile === "string" ? cssFile : cssFile.code;
+    }
+    return undefined;
+  }, [propGlobalCss, sandpack.files]);
   const saveStatusRef = useRef(saveStatus);
 
   // Keep ref in sync with saveStatus
@@ -352,6 +364,7 @@ function InternalToolbar({
       onReset={handleReset}
       onSave={handleSave}
       hasChanges={hasChanges}
+      globalCss={globalCss}
     />
   );
 }
@@ -605,6 +618,7 @@ export default function ComponentEditor({
             onCodeChange={onCodeChange}
             lastSavedFiles={lastSavedFiles}
             onLastSavedUpdate={setLastSavedFiles}
+            globalCss={effectiveCss}
           />
         )}
 

@@ -80,6 +80,7 @@ export default function ComponentDetailPage() {
                     <ThemeSelector
                         currentTheme={currentTheme}
                         onThemeChange={setCurrentTheme}
+                        globalCss={component.globalCss}
                     />
                     <Button onClick={handleEdit}>
                         {isSignedIn ? "Edit Copy" : "Sign in to Edit"}
