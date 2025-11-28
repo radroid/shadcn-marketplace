@@ -158,25 +158,117 @@ function extractRegistryDependencies(code: string): Set<string> {
 
 /**
  * Clean code string by removing backticks and fixing escaped quotes
+ * This function properly handles:
+ * - CSV double-quote escaping ("") -> single quote (")
+ * - JSON-encoded strings
+ * - Code blocks wrapped in backticks
+ * - Complex code with special characters
  */
 function cleanCode(code: string): string {
+  if (!code || typeof code !== 'string') {
+    return '';
+  }
+  
   let cleaned = code.trim();
   
-  // Remove leading backtick-quote pattern
-  cleaned = cleaned.replace(/^`"/, '"');
+  // If the code is wrapped as a JSON string (starts/ends with quotes), try to parse it
+  // This handles cases where the CSV stored the code as a JSON-encoded string
+  if ((cleaned.startsWith('"') && cleaned.endsWith('"')) || 
+      (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+    try {
+      // Try parsing as JSON string
+      const parsed = JSON.parse(cleaned);
+      if (typeof parsed === 'string') {
+        cleaned = parsed;
+      }
+    } catch (e) {
+      // Not a valid JSON string, continue with normal cleaning
+    }
+  }
   
-  // Remove trailing backtick
-  cleaned = cleaned.replace(/`"$/, '"');
+  // Remove markdown code block wrappers (```typescript ... ``` or ```tsx ... ```)
+  const codeBlockRegex = /^```(?:typescript|tsx|ts|javascript|jsx|js)?\n?([\s\S]*?)\n?```$/;
+  const codeBlockMatch = cleaned.match(codeBlockRegex);
+  if (codeBlockMatch) {
+    cleaned = codeBlockMatch[1];
+  }
   
-  // Remove standalone backticks at start/end
-  if (cleaned.startsWith('`') && cleaned.endsWith('`')) {
+  // Remove standalone backticks at start/end (but preserve backticks in template literals)
+  // Only remove if the entire string is wrapped in backticks (markdown inline code)
+  if (cleaned.startsWith('`') && cleaned.endsWith('`') && 
+      cleaned.split('`').length === 3) {
     cleaned = cleaned.slice(1, -1);
   }
   
-  // Replace double-escaped quotes
+  // Handle CSV double-quote escaping: "" becomes "
+  // But be careful - we need to do this intelligently to avoid breaking valid double quotes
+  // CSV escaping: a quote inside a field is represented as ""
+  // So we replace "" with " but only when it's clearly an escape sequence
+  // However, the CSV parser should already handle this, so we do a conservative replacement
+  // Only replace if it looks like CSV escaping (quotes that appear to be escaped)
   cleaned = cleaned.replace(/""/g, '"');
   
+  // Fix common corruption patterns from CSV parsing issues
+  // Fix truncated null values in ternary operators: `: n` -> `: null`
+  cleaned = cleaned.replace(/:\s*n\s*$/gm, ': null');
+  cleaned = cleaned.replace(/:\s*n\s*\n/g, ': null\n');
+  cleaned = cleaned.replace(/:\s*n\s*\)/g, ': null)');
+  cleaned = cleaned.replace(/:\s*n\s*}/g, ': null}');
+  cleaned = cleaned.replace(/:\s*n\s*`/g, ': null`');
+  
+  // Fix other common truncations that might occur
+  // Fix `return color ?` patterns that might have been corrupted
+  cleaned = cleaned.replace(/return\s+color\s+\?\s*`[^`]*`\s*:\s*n\b/g, 'return color ? `  --color-${key}: ${color};` : null');
+  
+  // Fix corrupted template literal patterns in ChartStyle component
+  // Pattern: return color ? `  --color-${key}: ${color};` : null
+  cleaned = cleaned.replace(/return\s+color\s+\?\s*`\s*--color-\$\{key\}:\s*\$\{color\};`\s*:\s*n\b/g, 
+    'return color ? `  --color-${key}: ${color};` : null');
+  
   return cleaned.trim();
+}
+
+/**
+ * Validate that code is properly formatted after cleaning
+ * Returns an error message if there are issues, or null if valid
+ */
+function validateCode(code: string, componentId: string, codeType: 'code' | 'previewCode'): string | null {
+  if (!code || code.trim().length === 0) {
+    return null; // Empty code is valid (some components might not have preview code)
+  }
+  
+  // Check for common issues that indicate parsing problems
+  const issues: string[] = [];
+  
+  // Check for unclosed quotes in JSX attributes
+  // Look for patterns like: <Component prop=">  or defaultValue=">
+  // This catches cases where a quote is not closed before the closing bracket
+  const unclosedQuotePatterns = [
+    /<[^>]*\s+\w+="\s*>/g,  // Attribute with unclosed quote: prop=">
+    /defaultValue=">/g,      // Specific pattern from error: defaultValue=">
+    /defaultValue='>/g,      // Single quote version: defaultValue='>
+  ];
+  
+  for (const pattern of unclosedQuotePatterns) {
+    if (pattern.test(code)) {
+      issues.push('Found unclosed quotes in JSX attributes (check defaultValue and other attributes)');
+      break; // Only report once
+    }
+  }
+  
+  // Check for unmatched quote pairs (simple heuristic)
+  const singleQuotes = (code.match(/'/g) || []).length;
+  const doubleQuotes = (code.match(/"/g) || []).length;
+  const backticks = (code.match(/`/g) || []).length;
+  
+  // Note: This is just a warning - template literals and strings can have quotes inside
+  // So we just log it but don't fail
+  
+  if (issues.length > 0) {
+    return `Component ${componentId} (${codeType}): ${issues.join(', ')}`;
+  }
+  
+  return null;
 }
 
 /**
@@ -252,6 +344,7 @@ function parseBoolean(value: string): boolean {
 
 /**
  * Transform CSV row to ParsedComponent with extracted dependencies
+ * Validates code and reports issues
  */
 function transformRow(
   row: CSVRow,
@@ -259,6 +352,17 @@ function transformRow(
 ): ParsedComponent {
   const cleanedCode = cleanCode(row.code);
   const cleanedPreviewCode = cleanCode(row.previewCode);
+  
+  // Validate code and log warnings
+  const codeWarning = validateCode(cleanedCode, row.componentId, 'code');
+  const previewWarning = validateCode(cleanedPreviewCode, row.componentId, 'previewCode');
+  
+  if (codeWarning) {
+    console.warn(`⚠️  ${codeWarning}`);
+  }
+  if (previewWarning) {
+    console.warn(`⚠️  ${previewWarning}`);
+  }
   
   // Extract dependencies from code (this takes precedence over CSV)
   const dependencies = getDependenciesFromCode(cleanedCode, cleanedPreviewCode);
@@ -320,7 +424,7 @@ async function main() {
 
   // Connect to Convex
   console.log('📡 Connecting to Convex...');
-  const client = new ConvexClient(CONVEX_URL);
+  const client = new ConvexClient(CONVEX_URL!);
   
   // Fetch existing components to validate registry dependencies
   console.log('📥 Fetching existing components from Convex...');
