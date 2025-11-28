@@ -135,8 +135,18 @@
   overflow: hidden;
 }
 
-.readonly-editor-container > * {
+.readonly-editor-container > *:not(.copy-code-btn) {
   height: 100% !important;
+}
+
+/* Copy code button - force square shape */
+.copy-code-btn {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  max-width: 24px !important;
+  max-height: 24px !important;
 }
 
 .readonly-editor-container .sp-code-editor {
@@ -240,7 +250,7 @@
   overflow: hidden;
 }
 
-.editor-container > * {
+.editor-container > *:not(.copy-code-btn) {
   height: 100% !important;
 }
 
@@ -336,5 +346,87 @@
 
 .editor-container .monaco-editor .monaco-scrollable-element {
   padding-bottom: 0 !important;
+}
+
+/* VS Code style tabs for registry dependencies */
+/* Target the parent [role="tab"] element which contains the entire tab area */
+.editor-container [role="tab"][data-registry-dependency="true"],
+.readonly-editor-container [role="tab"][data-registry-dependency="true"] {
+  background-color: oklch(0.88 0.025 250 / 0.6) !important;
+  background: oklch(0.88 0.025 250 / 0.6) !important;
+}
+
+/* Ensure button inside has transparent background so parent shows through */
+.editor-container [role="tab"][data-registry-dependency="true"] button,
+.readonly-editor-container [role="tab"][data-registry-dependency="true"] button {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+/* Dark mode registry dependency tabs */
+.dark .editor-container [role="tab"][data-registry-dependency="true"],
+.dark .readonly-editor-container [role="tab"][data-registry-dependency="true"] {
+  background-color: oklch(0.35 0.03 250 / 0.6) !important;
+  background: oklch(0.35 0.03 250 / 0.6) !important;
+}
+
+.dark .editor-container [role="tab"][data-registry-dependency="true"] button,
+.dark .readonly-editor-container [role="tab"][data-registry-dependency="true"] button {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+/* Active registry dependency tab - slightly more prominent */
+.editor-container [role="tab"][data-registry-dependency="true"][aria-selected="true"],
+.readonly-editor-container [role="tab"][data-registry-dependency="true"][aria-selected="true"] {
+  background-color: oklch(0.88 0.025 250 / 0.75) !important;
+  background: oklch(0.88 0.025 250 / 0.75) !important;
+}
+
+.dark .editor-container [role="tab"][data-registry-dependency="true"][aria-selected="true"],
+.dark .readonly-editor-container [role="tab"][data-registry-dependency="true"][aria-selected="true"] {
+  background-color: oklch(0.35 0.03 250 / 0.75) !important;
+  background: oklch(0.35 0.03 250 / 0.75) !important;
+}
+
+/* VS Code style tabs - right gray border for separators */
+.editor-container [role="tab"],
+.readonly-editor-container [role="tab"] {
+  border-right: 1px solid oklch(0.85 0 0) !important;
+  border-top: 2px solid transparent !important;
+  border-bottom: 2px solid transparent !important;
+}
+
+/* Dark mode tab separators */
+.dark .editor-container [role="tab"],
+.dark .readonly-editor-container [role="tab"] {
+  border-right: 1px solid oklch(0.3 0 0) !important;
+}
+
+/* VS Code style active tab - bottom border */
+.editor-container [role="tab"][aria-selected="true"],
+.readonly-editor-container [role="tab"][aria-selected="true"],
+.editor-container [role="tab"]:focus-within,
+.readonly-editor-container [role="tab"]:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+  border-bottom: 2px solid oklch(0.55 0.2 250) !important;
+}
+
+/* Dark mode active tab */
+.dark .editor-container [role="tab"][aria-selected="true"],
+.dark .readonly-editor-container [role="tab"][aria-selected="true"],
+.dark .editor-container [role="tab"]:focus-within,
+.dark .readonly-editor-container [role="tab"]:focus-within {
+  border-bottom: 2px solid oklch(0.7 0.18 250) !important;
+}
+
+/* Remove default focus ring from tab buttons */
+.editor-container [role="tab"] button:focus,
+.readonly-editor-container [role="tab"] button:focus,
+.editor-container [role="tab"] button:focus-visible,
+.readonly-editor-container [role="tab"] button:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 

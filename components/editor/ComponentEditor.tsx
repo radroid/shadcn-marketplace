@@ -9,6 +9,8 @@ import {
   SandpackLayout,
 } from "@codesandbox/sandpack-react";
 import { useTheme } from "next-themes";
+import { Copy, Check } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SaveStatus } from "./SaveStatusIndicator";
 import { EditorToolbar } from "./EditorToolbar";
 import { DEFAULT_GLOBAL_CSS, getThemeCss } from "./theme-generator";
@@ -67,6 +69,133 @@ const DEFAULT_DEPENDENCIES = {
   "@types/react-dom": "^18.2.0",
   "@types/node": "^20.0.0",
 };
+
+// =============================================================================
+// Copy Code Button Component (lives inside SandpackProvider)
+// =============================================================================
+
+function CopyCodeButton() {
+  const { sandpack } = useSandpack();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(async () => {
+    const activeFile = sandpack.activeFile;
+    const file = sandpack.files[activeFile];
+    const code = typeof file === 'string' ? file : file.code;
+
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy code:', err);
+    }
+  }, [sandpack.activeFile, sandpack.files]);
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          className="copy-code-btn absolute top-12 right-2 z-10 shadow-md bg-primary text-primary-foreground hover:bg-primary/90 rounded-md flex items-center justify-center"
+          onClick={handleCopy}
+          aria-label="Copy code"
+        >
+          {copied ? (
+            <Check className="h-3 w-3" />
+          ) : (
+            <Copy className="h-3 w-3" />
+          )}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>
+        {copied ? "Copied!" : "Copy code"}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+// =============================================================================
+// Registry Tab Marker Component (marks registry dependency tabs)
+// =============================================================================
+
+function RegistryTabMarker({ 
+  componentPath, 
+  registryDependenciesCode 
+}: { 
+  componentPath: string; 
+  registryDependenciesCode?: Record<string, { code: string; dependencies?: Record<string, string> }> 
+}) {
+  const { sandpack } = useSandpack();
+  const prevActiveFileRef = useRef(sandpack.activeFile);
+
+  useEffect(() => {
+    if (!registryDependenciesCode) return;
+
+    const registryPaths = Object.keys(registryDependenciesCode).map(
+      name => `/components/ui/${name}.tsx`
+    );
+
+    const markTabs = () => {
+      // Find all tab buttons in both editor containers
+      const containers = document.querySelectorAll('.editor-container, .readonly-editor-container');
+      
+      containers.forEach((container) => {
+        // Only select the actual tab buttons, not the tab containers
+        const tabButtons = container.querySelectorAll(
+          '[role="tab"] > button, button[class*="tab-button"]'
+        );
+
+        tabButtons.forEach((button) => {
+          const title = button.getAttribute('title') || button.getAttribute('aria-label') || '';
+          const textContent = button.textContent || '';
+          const buttonElement = button as HTMLElement;
+          
+          // Find the parent [role="tab"] element
+          const tabElement = buttonElement.closest('[role="tab"]') as HTMLElement;
+          
+          // Check if this tab is a registry dependency (but not the main component)
+          const isRegistryDependency = registryPaths.some(
+            path => {
+              const fileName = path.split('/').pop() || '';
+              return (title.includes(path) || title.includes(fileName) || textContent.includes(fileName)) 
+                && path !== componentPath;
+            }
+          );
+
+          if (isRegistryDependency && tabElement) {
+            // Set attribute on the parent tab element, not just the button
+            tabElement.setAttribute('data-registry-dependency', 'true');
+            buttonElement.setAttribute('data-registry-dependency', 'true');
+          } else {
+            if (tabElement) {
+              tabElement.removeAttribute('data-registry-dependency');
+            }
+            buttonElement.removeAttribute('data-registry-dependency');
+          }
+        });
+      });
+    };
+
+    // Mark tabs initially and on changes
+    markTabs();
+    const interval = setInterval(markTabs, 500);
+    
+    // Also mark when active file changes
+    const checkInterval = setInterval(() => {
+      if (sandpack.activeFile !== prevActiveFileRef.current) {
+        prevActiveFileRef.current = sandpack.activeFile;
+        setTimeout(markTabs, 100);
+      }
+    }, 200);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(checkInterval);
+    };
+  }, [sandpack.activeFile, componentPath, registryDependenciesCode]);
+
+  return null;
+}
 
 // =============================================================================
 // Internal Toolbar Component (lives inside SandpackProvider)
@@ -292,18 +421,31 @@ function useSandpackFiles(
   );
 }
 
-function useSandpackOptions(componentPath: string) {
+function useSandpackOptions(
+  componentPath: string,
+  registryDependenciesCode?: Record<string, { code: string; dependencies?: Record<string, string> }>
+) {
+  const registryFilePaths = useMemo(() => {
+    if (!registryDependenciesCode) return [];
+    return Object.keys(registryDependenciesCode).map(name => `/components/ui/${name}.tsx`);
+  }, [registryDependenciesCode]);
+
   return useMemo(
     () => ({
       externalResources: EXTERNAL_RESOURCES,
       activeFile: "/Preview.tsx",
-      visibleFiles: ["/Preview.tsx", componentPath, "/styles/globals.css"],
+      visibleFiles: [
+        "/Preview.tsx",
+        componentPath,
+        "/styles/globals.css",
+        ...registryFilePaths,
+      ],
       autoReload: true,
       autorun: true,
       recompileMode: "immediate" as const,
       recompileDelay: 0,
     }),
-    [componentPath]
+    [componentPath, registryFilePaths]
   );
 }
 
@@ -393,7 +535,7 @@ export default function ComponentEditor({
   // Sandpack configuration - files should only update when source data changes
   // Sandpack will handle live updates internally when user edits in the editor
   const files = useSandpackFiles(componentPath, code, previewCode, effectiveCss, isDark, registryDependenciesCode);
-  const options = useSandpackOptions(componentPath);
+  const options = useSandpackOptions(componentPath, registryDependenciesCode);
   const customSetup = useSandpackSetup(dependencies, registryDependenciesCode);
 
   // Use a ref to stabilize files - refs don't trigger re-renders, keeping Sandpack's internal state intact
@@ -478,9 +620,15 @@ export default function ComponentEditor({
               minWidth: 0,
               minHeight: 0,
               height: "100%",
-              overflow: "hidden"
+              overflow: "hidden",
+              position: "relative"
             }}
           >
+            <CopyCodeButton />
+            <RegistryTabMarker 
+              componentPath={componentPath}
+              registryDependenciesCode={registryDependenciesCode}
+            />
             <SandpackCodeEditor
               showTabs
               showLineNumbers
