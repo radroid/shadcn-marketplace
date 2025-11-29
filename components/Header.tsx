@@ -9,16 +9,29 @@ import { useDesignPage } from "./DesignPageContext";
 import { Share, Search } from "lucide-react";
 import { SearchDialog } from "./SearchDialog";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 export default function Header() {
     const designPage = useDesignPage();
     const [searchOpen, setSearchOpen] = useState(false);
+    const pathname = usePathname();
 
     return (
         <>
-            <header className="border-b">
+            <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="container mx-auto flex h-16 items-center justify-between px-4">
-                    <Link href="/" className="text-xl font-bold">
+                    <Link 
+                        href="/" 
+                        className="text-xl font-bold"
+                        onClick={(e) => {
+                            // If already on homepage, scroll to top
+                            if (pathname === "/") {
+                                e.preventDefault();
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }
+                            // Otherwise, Next.js Link will handle navigation and scroll
+                        }}
+                    >
                         Shadcn Marketplace
                     </Link>
 

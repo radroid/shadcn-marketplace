@@ -6,9 +6,15 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ComponentPreviewCard } from "@/components/ComponentPreviewCard";
+import { useEffect } from "react";
 
 export default function Home() {
   const components = useQuery(api.components.list);
+
+  // Scroll to top when component mounts (when navigating to homepage)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
 
   return (
     <div className="container mx-auto py-8 px-4">

@@ -178,15 +178,17 @@ function RegistryTabMarker({
 
     // Mark tabs initially and on changes
     markTabs();
-    const interval = setInterval(markTabs, 500);
     
-    // Also mark when active file changes
+    // Reduced frequency from 500ms to 2000ms for better performance
+    const interval = setInterval(markTabs, 2000);
+    
+    // Also mark when active file changes - reduced from 200ms to 500ms
     const checkInterval = setInterval(() => {
       if (sandpack.activeFile !== prevActiveFileRef.current) {
         prevActiveFileRef.current = sandpack.activeFile;
         setTimeout(markTabs, 100);
       }
-    }, 200);
+    }, 500);
 
     return () => {
       clearInterval(interval);

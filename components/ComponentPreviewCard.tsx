@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, memo } from "react";
 import { SandpackProvider, SandpackPreview } from "@codesandbox/sandpack-react";
 import { useTheme } from "next-themes";
 import { getAppCode, UTILS_CODE, TSCONFIG_CODE } from "./editor/sandpack-app-template";
@@ -33,7 +33,8 @@ interface ComponentPreviewCardProps {
   isUserComponent?: boolean;
 }
 
-export function ComponentPreviewCard({
+// Memoized component to prevent unnecessary re-renders in lists
+const ComponentPreviewCardComponent = ({
   code,
   previewCode,
   globalCss,
@@ -41,7 +42,7 @@ export function ComponentPreviewCard({
   componentName,
   registryDependenciesCode,
   isUserComponent = false,
-}: ComponentPreviewCardProps) {
+}: ComponentPreviewCardProps) => {
   const { theme, resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark" || (resolvedTheme === undefined && theme === "dark");
 
@@ -175,5 +176,8 @@ export function ComponentPreviewCard({
       </SandpackProvider>
     </div>
   );
-}
+};
+
+// Export memoized version for better performance
+export const ComponentPreviewCard = memo(ComponentPreviewCardComponent);
 

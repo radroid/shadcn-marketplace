@@ -65,6 +65,95 @@ Built with modern web technologies for a smooth, fast experience.
    
    Navigate to [http://localhost:3000](http://localhost:3000)
 
+## Deployment
+
+### Deploying to Cloudflare Pages
+
+This application is optimized for deployment on Cloudflare Pages with full support for Edge runtime.
+
+#### Prerequisites
+
+- Cloudflare account ([sign up free](https://dash.cloudflare.com/sign-up))
+- Wrangler CLI installed (included in dev dependencies)
+- Environment variables configured
+
+#### Method 1: Cloudflare Dashboard (Recommended)
+
+1. **Connect your repository**
+   - Go to [Cloudflare Pages Dashboard](https://dash.cloudflare.com/pages)
+   - Click "Create a project" → "Connect to Git"
+   - Select your repository
+
+2. **Configure build settings**
+   ```
+   Build command: pnpm pages:build
+   Build output directory: .vercel/output/static
+   ```
+
+3. **Set environment variables**
+   
+   In the Cloudflare Pages dashboard, add these environment variables:
+   ```
+   NEXT_PUBLIC_CONVEX_URL=your_convex_deployment_url
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+   CLERK_SECRET_KEY=your_clerk_secret_key
+   CLERK_JWT_ISSUER_DOMAIN=your_clerk_jwt_issuer_domain
+   ```
+
+4. **Deploy**
+   - Click "Save and Deploy"
+   - Your site will be available at `your-project.pages.dev`
+
+#### Method 2: Wrangler CLI
+
+1. **Build for Cloudflare Pages**
+   ```bash
+   pnpm pages:build
+   ```
+
+2. **Deploy using Wrangler**
+   ```bash
+   pnpm pages:deploy
+   ```
+
+3. **Set environment variables via CLI**
+   ```bash
+   wrangler pages project create shadcn-marketplace
+   
+   # Set each environment variable
+   wrangler pages secret put NEXT_PUBLIC_CONVEX_URL
+   wrangler pages secret put NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+   wrangler pages secret put CLERK_SECRET_KEY
+   wrangler pages secret put CLERK_JWT_ISSUER_DOMAIN
+   ```
+
+#### Local Preview with Cloudflare Environment
+
+Test your deployment locally before pushing:
+
+```bash
+# Build and preview locally with Cloudflare Workers runtime
+pnpm pages:dev
+```
+
+This starts a local development server using Wrangler that simulates the Cloudflare Pages environment.
+
+#### Important Notes
+
+- **Image Optimization**: Configured with `unoptimized: true` for Cloudflare compatibility
+- **Middleware**: Clerk middleware works seamlessly with Cloudflare Edge runtime
+- **External Services**: Convex and Clerk are external services that work perfectly with Cloudflare Pages
+- **Build Output**: The `@cloudflare/next-on-pages` adapter automatically optimizes the Next.js build for Cloudflare
+
+### Environment Variables Reference
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `NEXT_PUBLIC_CONVEX_URL` | Your Convex deployment URL | Yes |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable API key | Yes |
+| `CLERK_SECRET_KEY` | Clerk secret API key (server-side) | Yes |
+| `CLERK_JWT_ISSUER_DOMAIN` | Clerk JWT issuer domain for Convex auth | Yes |
+
 ## Contributing
 
 We welcome contributions! Whether you want to fix bugs, add features, or submit new components to the marketplace, please read our [Contributing Guide](CONTRIBUTING.md) to get started.
