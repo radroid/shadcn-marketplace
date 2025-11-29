@@ -15,11 +15,16 @@ port = 8788
 # For production, set these in Cloudflare Pages dashboard
 
 # Bindings and assets
-[[d1_databases]]
-# Add any D1 database bindings here if needed
+# Add bindings here if needed:
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "my-database"
+# database_id = "xxx"
 
-[[kv_namespaces]]
-# Add any KV namespace bindings here if needed
+# [[kv_namespaces]]
+# binding = "MY_KV"
+# id = "xxx"
 
-[[r2_buckets]]
-# Add any R2 bucket bindings here if needed
+# [[r2_buckets]]
+# binding = "MY_BUCKET"
+# bucket_name = "my-bucket"
