@@ -1,12 +1,12 @@
 import { clerkMiddleware } from '@clerk/nextjs/server'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, NextFetchEvent } from 'next/server'
 
 // Next.js 16: Migrated from middleware.ts to proxy.ts
 // The proxy function wraps Clerk's middleware for authentication
 const clerk = clerkMiddleware()
 
-export function proxy(request: NextRequest) {
-  return clerk(request)
+export function proxy(request: NextRequest, event: NextFetchEvent) {
+  return clerk(request, event)
 }
 
 export const config = {
