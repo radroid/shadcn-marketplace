@@ -11,18 +11,15 @@ const nextConfig: NextConfig = {
     // Use unoptimized for Cloudflare Pages compatibility
     unoptimized: true,
   },
-  // Cloudflare Pages compatibility - standalone for Edge runtime with middleware
-  output: 'standalone',
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Ensure compatibility with Cloudflare Workers runtime
-  experimental: {
-    serverComponentsExternalPackages: ['convex'],
-  },
+  // Next.js 16: moved from experimental.serverComponentsExternalPackages
+  serverExternalPackages: ['convex'],
+  // Skip static optimization for error pages to avoid build issues
+  skipTrailingSlashRedirect: true,
+  // Disable static page generation to avoid SSR issues with client components
+  output: 'standalone',
 };
 
 export default nextConfig;

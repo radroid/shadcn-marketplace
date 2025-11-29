@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, memo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { SandpackProvider, SandpackPreview } from "@codesandbox/sandpack-react";
 import { useTheme } from "next-themes";
 import { getAppCode, UTILS_CODE, TSCONFIG_CODE } from "./editor/sandpack-app-template";
@@ -33,8 +33,7 @@ interface ComponentPreviewCardProps {
   isUserComponent?: boolean;
 }
 
-// Memoized component to prevent unnecessary re-renders in lists
-const ComponentPreviewCardComponent = ({
+export function ComponentPreviewCard({
   code,
   previewCode,
   globalCss,
@@ -42,8 +41,15 @@ const ComponentPreviewCardComponent = ({
   componentName,
   registryDependenciesCode,
   isUserComponent = false,
-}: ComponentPreviewCardProps) => {
+}: ComponentPreviewCardProps) {
   const { theme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  
+  // Prevent SSR mismatch by only rendering after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const isDark = resolvedTheme === "dark" || (resolvedTheme === undefined && theme === "dark");
 
   const componentPath = `/components/ui/${componentName}.tsx`;
@@ -144,6 +150,15 @@ const ComponentPreviewCardComponent = ({
   // User components should always use Sandpack to show edited code
   const LocalPreview = !isUserComponent ? REGISTRY[componentName] : null;
 
+  // Prevent SSR hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="aspect-video w-full rounded-md border bg-muted/30 overflow-hidden flex items-center justify-center">
+        <div className="animate-pulse">Loading preview...</div>
+      </div>
+    );
+  }
+
   if (LocalPreview) {
     return (
       <div className="aspect-video w-full rounded-md border bg-muted/30 overflow-hidden flex items-center justify-center p-4">
@@ -176,8 +191,5 @@ const ComponentPreviewCardComponent = ({
       </SandpackProvider>
     </div>
   );
-};
-
-// Export memoized version for better performance
-export const ComponentPreviewCard = memo(ComponentPreviewCardComponent);
+}
 

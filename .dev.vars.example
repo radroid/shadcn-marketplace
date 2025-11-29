@@ -1,0 +1,13 @@
+# Local development environment variables for Wrangler
+# Copy this file to .dev.vars and fill in your actual values
+# .dev.vars is gitignored and should never be committed
+
+# Convex Configuration
+NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
+
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxxxxxxxxxxx
+CLERK_SECRET_KEY=sk_test_xxxxxxxxxxxxxxxxxxxxx
+CLERK_JWT_ISSUER_DOMAIN=your-app.clerk.accounts.dev
+
+

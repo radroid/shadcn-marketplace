@@ -1,6 +1,13 @@
 import { clerkMiddleware } from '@clerk/nextjs/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-export default clerkMiddleware()
+// Next.js 16: Migrated from middleware.ts to proxy.ts
+// The proxy function wraps Clerk's middleware for authentication
+const clerk = clerkMiddleware()
+
+export function proxy(request: NextRequest) {
+  return clerk(request)
+}
 
 export const config = {
     matcher: [
@@ -10,3 +17,4 @@ export const config = {
         '/(api|trpc)(.*)',
     ],
 }
+

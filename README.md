@@ -69,81 +69,50 @@ Built with modern web technologies for a smooth, fast experience.
 
 ### Deploying to Cloudflare Pages
 
-This application is optimized for deployment on Cloudflare Pages with full support for Edge runtime.
+This application is ready to deploy on Cloudflare Pages with standard Next.js configuration.
 
 #### Prerequisites
 
 - Cloudflare account ([sign up free](https://dash.cloudflare.com/sign-up))
-- Wrangler CLI installed (included in dev dependencies)
-- Environment variables configured
+- Git repository (GitHub, GitLab, or Bitbucket)
 
-#### Method 1: Cloudflare Dashboard (Recommended)
+#### Simple Deployment Steps
 
 1. **Connect your repository**
    - Go to [Cloudflare Pages Dashboard](https://dash.cloudflare.com/pages)
    - Click "Create a project" → "Connect to Git"
    - Select your repository
 
-2. **Configure build settings**
-   ```
-   Build command: pnpm pages:build
-   Build output directory: .vercel/output/static
-   ```
+2. **Configure build settings** (Cloudflare will auto-detect Next.js)
+   - **Framework preset:** Next.js (auto-detected)
+   - **Build command:** `pnpm build` (default)
+   - **Build output directory:** `.next` (default - auto-detected)
+   - **Root directory:** (leave empty unless your app is in a subdirectory)
+   - **Node version:** 18 or higher
 
 3. **Set environment variables**
    
-   In the Cloudflare Pages dashboard, add these environment variables:
+   In the Cloudflare Pages dashboard → Settings → Environment variables, add:
    ```
    NEXT_PUBLIC_CONVEX_URL=your_convex_deployment_url
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
    CLERK_SECRET_KEY=your_clerk_secret_key
    CLERK_JWT_ISSUER_DOMAIN=your_clerk_jwt_issuer_domain
    ```
+   
+   **Important:** Add these for both "Production" and "Preview" environments.
 
 4. **Deploy**
    - Click "Save and Deploy"
+   - Cloudflare will automatically build and deploy your Next.js app
    - Your site will be available at `your-project.pages.dev`
-
-#### Method 2: Wrangler CLI
-
-1. **Build for Cloudflare Pages**
-   ```bash
-   pnpm pages:build
-   ```
-
-2. **Deploy using Wrangler**
-   ```bash
-   pnpm pages:deploy
-   ```
-
-3. **Set environment variables via CLI**
-   ```bash
-   wrangler pages project create shadcn-marketplace
-   
-   # Set each environment variable
-   wrangler pages secret put NEXT_PUBLIC_CONVEX_URL
-   wrangler pages secret put NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-   wrangler pages secret put CLERK_SECRET_KEY
-   wrangler pages secret put CLERK_JWT_ISSUER_DOMAIN
-   ```
-
-#### Local Preview with Cloudflare Environment
-
-Test your deployment locally before pushing:
-
-```bash
-# Build and preview locally with Cloudflare Workers runtime
-pnpm pages:dev
-```
-
-This starts a local development server using Wrangler that simulates the Cloudflare Pages environment.
 
 #### Important Notes
 
+- **Auto-detection:** Cloudflare Pages automatically detects Next.js and configures the build
 - **Image Optimization**: Configured with `unoptimized: true` for Cloudflare compatibility
 - **Middleware**: Clerk middleware works seamlessly with Cloudflare Edge runtime
 - **External Services**: Convex and Clerk are external services that work perfectly with Cloudflare Pages
-- **Build Output**: The `@cloudflare/next-on-pages` adapter automatically optimizes the Next.js build for Cloudflare
 
 ### Environment Variables Reference
 

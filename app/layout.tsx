@@ -19,6 +19,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Force dynamic rendering to avoid SSR issues with client components
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: {
     default: "Shadcn Marketplace - Browse & Customize UI Components",
