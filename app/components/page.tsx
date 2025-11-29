@@ -98,6 +98,40 @@ export default function ComponentsPage() {
         return filtered;
     }, [components, sortBy, filterBy]);
 
+    // Collect all unique registry dependencies from filtered components
+    const allRegistryDependencies = useMemo(() => {
+        if (!filteredAndSortedComponents) return [];
+        
+        const depsSet = new Set<string>();
+        filteredAndSortedComponents.forEach(component => {
+            if (component.registryDependencies) {
+                component.registryDependencies.forEach(dep => depsSet.add(dep));
+            }
+        });
+        
+        return Array.from(depsSet);
+    }, [filteredAndSortedComponents]);
+
+    // Batch load all registry dependencies at once for performance
+    const registryComponentCode = useQuery(
+        api.components.getResolvedRegistryComponents,
+        allRegistryDependencies.length > 0 ? { ids: allRegistryDependencies } : "skip"
+    );
+
+    // Helper to get registry code for a specific component
+    const getRegistryCodeForComponent = (component: Doc<"userComponents">) => {
+        if (!component.registryDependencies || !registryComponentCode) return undefined;
+        
+        const filteredCode: Record<string, { code: string; dependencies?: Record<string, string> }> = {};
+        component.registryDependencies.forEach(dep => {
+            if (registryComponentCode[dep]) {
+                filteredCode[dep] = registryComponentCode[dep];
+            }
+        });
+        
+        return Object.keys(filteredCode).length > 0 ? filteredCode : undefined;
+    };
+
     const trashCount = trashComponents?.length || 0;
 
     if (components === undefined) {
@@ -200,6 +234,8 @@ export default function ComponentsPage() {
                                     globalCss={component.globalCss}
                                     dependencies={component.dependencies}
                                     componentName={component.catalogComponentId || component.name.toLowerCase().replace(/\s+/g, "-")}
+                                    registryDependenciesCode={getRegistryCodeForComponent(component)}
+                                    isUserComponent={true}
                                 />
                             </CardContent>
                             <CardFooter className="flex gap-2">

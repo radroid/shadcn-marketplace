@@ -29,6 +29,8 @@ interface ComponentPreviewCardProps {
   globalCss?: string;
   dependencies?: Record<string, string>;
   componentName: string;
+  registryDependenciesCode?: Record<string, { code: string; dependencies?: Record<string, string> }>;
+  isUserComponent?: boolean;
 }
 
 export function ComponentPreviewCard({
@@ -37,11 +39,31 @@ export function ComponentPreviewCard({
   globalCss,
   dependencies,
   componentName,
+  registryDependenciesCode,
+  isUserComponent = false,
 }: ComponentPreviewCardProps) {
   const { theme, resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark" || (resolvedTheme === undefined && theme === "dark");
 
   const componentPath = `/components/ui/${componentName}.tsx`;
+
+  // Build registry dependency files
+  const registryFiles = useMemo(() => {
+    if (!registryDependenciesCode) return {};
+
+    const files = Object.entries(registryDependenciesCode).reduce(
+      (acc, [name, data]) => ({
+        ...acc,
+        [`/components/ui/${name}.tsx`]: {
+          code: data.code,
+          hidden: false,
+        },
+      }),
+      {} as Record<string, { code: string; hidden: boolean }>
+    );
+
+    return files;
+  }, [registryDependenciesCode]);
 
   // Match the exact file structure from ComponentEditor
   const files = useMemo(() => {
@@ -60,32 +82,48 @@ export function ComponentPreviewCard({
         code: TSCONFIG_CODE,
         hidden: true,
       },
+      ...registryFiles,
     };
-  }, [code, previewCode, globalCss, componentName, isDark]);
+  }, [code, previewCode, globalCss, componentName, isDark, registryFiles]);
 
   // Match the exact options from ComponentEditor
+  const registryFilePaths = useMemo(() => {
+    if (!registryDependenciesCode) return [];
+    return Object.keys(registryDependenciesCode).map(name => `/components/ui/${name}.tsx`);
+  }, [registryDependenciesCode]);
+
   const options = useMemo(
     () => ({
       externalResources: EXTERNAL_RESOURCES,
       activeFile: "/Preview.tsx",
-      visibleFiles: ["/Preview.tsx", componentPath, "/styles/globals.css"],
+      visibleFiles: ["/Preview.tsx", componentPath, "/styles/globals.css", ...registryFilePaths],
       autoReload: true,
       autorun: true,
       recompileMode: "immediate" as const,
       recompileDelay: 0,
     }),
-    [componentPath]
+    [componentPath, registryFilePaths]
   );
 
   // Match the exact dependency setup from ComponentEditor
   const customSetup = useMemo(
-    () => ({
-      dependencies: {
-        ...DEFAULT_DEPENDENCIES,
-        ...(dependencies || {}),
-      },
-    }),
-    [dependencies]
+    () => {
+      // Collect all NPM dependencies from registry components
+      const registryNpmDeps = registryDependenciesCode
+        ? Object.values(registryDependenciesCode).reduce((acc, component) => {
+          return { ...acc, ...(component.dependencies || {}) };
+        }, {} as Record<string, string>)
+        : {};
+
+      return {
+        dependencies: {
+          ...DEFAULT_DEPENDENCIES,
+          ...registryNpmDeps,
+          ...(dependencies || {}),
+        },
+      };
+    },
+    [dependencies, registryDependenciesCode]
   );
 
   // Create a key that changes when component data changes to force Sandpack remount
@@ -95,10 +133,15 @@ export function ComponentPreviewCard({
     const codeHash = code.length + (code.slice(0, 20) + code.slice(-20)).replace(/\s/g, '').length;
     const previewHash = previewCode.length + (previewCode.slice(0, 20) + previewCode.slice(-20)).replace(/\s/g, '').length;
     const cssHash = globalCss ? globalCss.length : 0;
-    return `preview-${componentName}-${codeHash}-${previewHash}-${cssHash}-${isDark ? "dark" : "light"}`;
-  }, [componentName, code, previewCode, globalCss, isDark]);
+    const registryHash = registryDependenciesCode 
+      ? Object.keys(registryDependenciesCode).join(',') 
+      : '';
+    return `preview-${componentName}-${codeHash}-${previewHash}-${cssHash}-${registryHash}-${isDark ? "dark" : "light"}`;
+  }, [componentName, code, previewCode, globalCss, registryDependenciesCode, isDark]);
 
-  const LocalPreview = REGISTRY[componentName];
+  // Only use REGISTRY for catalog components, not user components
+  // User components should always use Sandpack to show edited code
+  const LocalPreview = !isUserComponent ? REGISTRY[componentName] : null;
 
   if (LocalPreview) {
     return (
