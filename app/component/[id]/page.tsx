@@ -55,7 +55,7 @@ export default function ComponentDetailPage() {
 
     if (component === undefined) {
         return (
-            <div className="flex h-[calc(100vh-64px)] items-center justify-center">
+            <div className="flex h-full items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
         );
@@ -70,7 +70,7 @@ export default function ComponentDetailPage() {
     }
 
     return (
-        <div className="w-full h-[calc(100vh-64px)] flex flex-col">
+        <div className="w-full h-full flex flex-col">
             <div className="border-b bg-background px-4 py-3 flex items-center justify-between shrink-0">
                 <div>
                     <h1 className="text-lg font-semibold">{component.name}</h1>

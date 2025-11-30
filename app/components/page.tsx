@@ -136,14 +136,14 @@ export default function ComponentsPage() {
 
     if (components === undefined) {
         return (
-            <div className="flex h-[calc(100vh-64px)] items-center justify-center">
+            <div className="flex h-full items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
         );
     }
 
     return (
-        <div className="container mx-auto py-8 px-4 relative min-h-[calc(100vh-64px)]">
+        <div className="container mx-auto py-8 px-4 relative">
             <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
                     <div>

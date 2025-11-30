@@ -38,7 +38,7 @@ export default function Home() {
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {components.map((component) => (
-            <Card key={component._id} className="flex flex-col">
+            <Card key={component._id} className="flex gap-4 flex-col">
               <CardHeader>
                 <CardTitle>{component.name}</CardTitle>
                 <CardDescription>{component.description}</CardDescription>

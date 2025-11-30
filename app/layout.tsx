@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { ClerkProvider } from '@clerk/nextjs'
-import ConvexClientProvider from '@/components/ConvexClientProvider'
+import ConvexClientWrapper from '@/components/ConvexClientWrapper'
 import Header from '@/components/Header'
 import { Toaster } from 'sonner'
 import StoreUserEffect from '@/components/StoreUserEffect'
@@ -51,10 +51,10 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    <html lang="en" suppressHydrationWarning className="h-full">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex flex-col overflow-hidden`}>
         <ClerkProvider>
-          <ConvexClientProvider>
+          <ConvexClientWrapper>
             <DesignPageProvider>
               <ThemeProvider
                 attribute="class"
@@ -64,13 +64,13 @@ export default function RootLayout({
               >
                 <StoreUserEffect />
                 <Header />
-                <main className="min-h-screen bg-background">
+                <main className="flex-1 bg-background overflow-auto">
                   {children}
                 </main>
                 <Toaster />
               </ThemeProvider>
             </DesignPageProvider>
-          </ConvexClientProvider>
+          </ConvexClientWrapper>
         </ClerkProvider>
       </body>
     </html>

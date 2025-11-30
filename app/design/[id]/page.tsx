@@ -155,7 +155,7 @@ function DesignPageContent() {
     }, [setPublishHandler]);
 
     return (
-        <div className="h-[calc(100vh-64px)] flex flex-col overflow-hidden">
+        <div className="h-full flex flex-col overflow-hidden">
             <Dialog open={isPublishOpen} onOpenChange={setIsPublishOpen}>
                 <DialogContent>
                     <DialogHeader>

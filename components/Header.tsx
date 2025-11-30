@@ -38,8 +38,8 @@ export default function Header() {
                     <div className="flex items-center gap-4">
                         {/* Search Button */}
                         <Button
-                            variant="outline"
-                            size="sm"
+                            variant="secondary"
+                            size="default"
                             onClick={() => setSearchOpen(true)}
                             className="hidden sm:flex items-center gap-2 text-muted-foreground"
                         >
@@ -51,11 +51,12 @@ export default function Header() {
                         </Button>
 
                         {designPage?.hasPublishHandler && (
-                            <Button variant="outline" size="sm" onClick={designPage.onPublishClick}>
+                            <Button variant="default" size="sm" onClick={designPage.onPublishClick}>
                                 <Share className="mr-2 h-4 w-4" />
                                 Publish
                             </Button>
                         )}
+                        <ModeToggle />
                         <Authenticated>
                             <Link href="/components">
                                 <Button variant="ghost">My Components</Button>
@@ -67,7 +68,6 @@ export default function Header() {
                                 <Button>Sign In</Button>
                             </SignInButton>
                         </Unauthenticated>
-                        <ModeToggle />
                     </div>
                 </div>
             </header>

@@ -161,8 +161,8 @@ export function ComponentPreviewCard({
 
   if (LocalPreview) {
     return (
-      <div className="aspect-video w-full rounded-md border bg-muted/30 overflow-hidden flex items-center justify-center p-4">
-        <div className="bg-background p-8 rounded-lg shadow-sm border flex items-center justify-center min-w-[200px] min-h-[100px]">
+      <div className="aspect-video w-full rounded-md border bg-muted/30 overflow-hidden flex items-center justify-center p-2">
+        <div className="bg-background p-4 rounded-lg shadow-sm border flex items-center justify-center min-w-[200px] min-h-[100px]">
           <LocalPreview />
         </div>
       </div>
