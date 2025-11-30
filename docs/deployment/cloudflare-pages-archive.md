@@ -21,6 +21,9 @@ Before deploying, ensure you have:
    - **Build output directory:** `.next` (auto-detected - don't change)
    - **Root directory:** (leave empty)
    - **Node version:** 18 or higher (default)
+   - **Deploy command:** ⚠️ **MUST BE EMPTY** - Delete any value in this field. Cloudflare automatically deploys after build succeeds.
+
+**CRITICAL:** Ensure the **Deploy command** field is completely empty. Do NOT enter `wrangler deploy`, `wrangler pages deploy`, or any other command. Cloudflare Pages handles deployment automatically.
 
 ### Step 2: Add Environment Variables
 
@@ -105,6 +108,40 @@ Once deployed:
 1. Verify build command is `pnpm pages:build`
 2. Check that `@cloudflare/next-on-pages` is in devDependencies
 3. Ensure Node version is 18 or higher
+
+### Error: "It looks like you've run a Workers-specific command in a Pages project"
+
+**Error message:** `For Pages, please run 'wrangler pages deploy' instead.`
+
+**Cause:** A custom deploy command is configured in Cloudflare Pages dashboard that uses `wrangler deploy` (Workers command) instead of automatic Pages deployment.
+
+**Solution:**
+1. Go to Cloudflare Pages dashboard → Your project → **Settings** → **Build & deployments**
+2. Scroll down to **Build configuration** → **Deploy command**
+3. **Remove or clear the deploy command field** (leave it empty)
+4. Cloudflare Pages will automatically handle deployment after the build completes
+5. Click **Save**
+6. Retry the deployment
+
+**Note:** For standard Next.js projects on Cloudflare Pages, you don't need a custom deploy command. Cloudflare automatically deploys after the build succeeds.
+
+### Error: "wrangler: not found" or "wrangler pages deploy" fails
+
+**Error message:** `/bin/sh: 1: wrangler: not found` or `Failed: error occurred while running deploy command`
+
+**Cause:** A deploy command is configured in Cloudflare Pages dashboard (like `wrangler pages deploy`), but wrangler is not available in the build environment. For standard Next.js projects, you should NOT use a deploy command.
+
+**Solution:**
+1. Go to Cloudflare Pages dashboard → Your project → **Settings** → **Build & deployments**
+2. Scroll down to **Build configuration** section
+3. Find the **Deploy command** field
+4. **DELETE/REMOVE any value in this field** - it must be completely empty
+5. Click **Save**
+6. Retry the deployment
+
+**Why:** Cloudflare Pages automatically deploys your built application. After the build command completes successfully, Cloudflare handles the deployment process - no additional command is needed.
+
+**Important:** The deploy command field should be empty for standard Next.js projects on Cloudflare Pages. The build output is automatically deployed when the build succeeds.
 
 ### Error: "Module not found"
 
@@ -197,6 +234,7 @@ If you encounter issues:
 |---------|-------|
 | Build command | `pnpm build` (default) |
 | Build output | `.next` (auto-detected) |
+| **Deploy command** | **EMPTY (no value)** - Cloudflare handles automatically |
 | Node version | 18+ (default) |
 | Framework | Next.js (auto-detected) |
 | Package manager | pnpm |

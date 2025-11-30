@@ -49,11 +49,12 @@ Built with modern web technologies for a smooth, fast experience.
 
 3. **Set up environment variables**
    
-   Create a `.env.local` file:
+   Create a `.env.local` file (or copy `.dev.vars.example` to `.dev.vars`):
    ```bash
    NEXT_PUBLIC_CONVEX_URL=your_convex_deployment_url
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
    CLERK_SECRET_KEY=your_clerk_secret_key
+   CLERK_JWT_ISSUER_DOMAIN=your_clerk_jwt_issuer_domain
    ```
 
 4. **Run the development server**
@@ -67,52 +68,40 @@ Built with modern web technologies for a smooth, fast experience.
 
 ## Deployment
 
-### Deploying to Cloudflare Pages
+This application is configured for **Cloudflare Workers** deployment using OpenNext.
 
-This application is ready to deploy on Cloudflare Pages with standard Next.js configuration.
+### Quick Deploy
 
-#### Prerequisites
-
-- Cloudflare account ([sign up free](https://dash.cloudflare.com/sign-up))
-- Git repository (GitHub, GitLab, or Bitbucket)
-
-#### Simple Deployment Steps
-
-1. **Connect your repository**
-   - Go to [Cloudflare Pages Dashboard](https://dash.cloudflare.com/pages)
-   - Click "Create a project" → "Connect to Git"
-   - Select your repository
-
-2. **Configure build settings** (Cloudflare will auto-detect Next.js)
-   - **Framework preset:** Next.js (auto-detected)
-   - **Build command:** `pnpm build` (default)
-   - **Build output directory:** `.next` (default - auto-detected)
-   - **Root directory:** (leave empty unless your app is in a subdirectory)
-   - **Node version:** 18 or higher
-
-3. **Set environment variables**
+1. **Set up environment variables**
    
-   In the Cloudflare Pages dashboard → Settings → Environment variables, add:
-   ```
+   Create a `.dev.vars` file (see `.dev.vars.example`):
+   ```bash
    NEXT_PUBLIC_CONVEX_URL=your_convex_deployment_url
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
    CLERK_SECRET_KEY=your_clerk_secret_key
    CLERK_JWT_ISSUER_DOMAIN=your_clerk_jwt_issuer_domain
    ```
-   
-   **Important:** Add these for both "Production" and "Preview" environments.
 
-4. **Deploy**
-   - Click "Save and Deploy"
-   - Cloudflare will automatically build and deploy your Next.js app
-   - Your site will be available at `your-project.pages.dev`
+2. **Deploy to Cloudflare Workers**
+   ```bash
+   pnpm deploy
+   ```
 
-#### Important Notes
+   Or preview locally first:
+   ```bash
+   pnpm preview
+   ```
 
-- **Auto-detection:** Cloudflare Pages automatically detects Next.js and configures the build
-- **Image Optimization**: Configured with `unoptimized: true` for Cloudflare compatibility
-- **Middleware**: Clerk middleware works seamlessly with Cloudflare Edge runtime
-- **External Services**: Convex and Clerk are external services that work perfectly with Cloudflare Pages
+### Detailed Deployment Guide
+
+For complete deployment instructions, troubleshooting, and configuration details, see the [Deployment Documentation](docs/deployment/README.md).
+
+### Important Notes
+
+- **OpenNext**: This app uses `@opennextjs/cloudflare` for Cloudflare Workers compatibility
+- **No Middleware**: Middleware is not used (OpenNext doesn't support Node.js middleware on Workers)
+- **Authentication**: Handled client-side via Clerk hooks and server-side via Convex JWT tokens
+- **Configuration**: See `wrangler.jsonc` and `open-next.config.ts` for configuration options
 
 ### Environment Variables Reference
 
