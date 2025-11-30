@@ -12,6 +12,8 @@ This application is configured for **Cloudflare Workers** deployment using OpenN
 
 ### Deploy to Cloudflare Workers
 
+#### Option 1: Using pnpm scripts (Recommended)
+
 1. **Set up environment variables**
 
    Create a `.dev.vars` file for local development (see `.dev.vars.example`):
@@ -34,7 +36,7 @@ This application is configured for **Cloudflare Workers** deployment using OpenN
 2. **Build and deploy**
 
    ```bash
-   # Build and deploy to Cloudflare
+   # Build and deploy to Cloudflare (runs build + deploy)
    pnpm deploy
 
    # Or build and preview locally first
@@ -44,6 +46,18 @@ This application is configured for **Cloudflare Workers** deployment using OpenN
 3. **Your app is live!**
 
    Your application will be available at `your-project-name.workers.dev`
+
+#### Option 2: Using Cloudflare Pages/Workers Dashboard
+
+If deploying via Cloudflare dashboard, configure:
+
+**Build Settings:**
+- **Build command:** `pnpm install && pnpm deploy`
+- **OR** `opennextjs-cloudflare build && opennextjs-cloudflare deploy`
+- **Build output directory:** (leave empty - not used for Workers)
+- **Root directory:** (leave empty)
+
+**Important:** The deploy command must include the build step. Do NOT use `npx wrangler deploy` alone - it will fail because `.open-next/worker.js` won't exist yet.
 
 ## Available Commands
 
@@ -77,12 +91,30 @@ Required environment variables:
 
 ## Troubleshooting
 
+### Error: "The entry-point file at '.open-next/worker.js' was not found"
+
+**Cause:** The build step didn't run before deployment. Cloudflare tried to deploy without building first.
+
+**Solution:**
+1. If using Cloudflare dashboard, ensure your **Build command** includes the build step:
+   - ✅ Correct: `pnpm install && pnpm deploy`
+   - ✅ Correct: `opennextjs-cloudflare build && opennextjs-cloudflare deploy`
+   - ❌ Wrong: `npx wrangler deploy` (missing build step)
+
+2. If deploying locally, use:
+   ```bash
+   pnpm deploy  # This runs both build and deploy
+   ```
+
+3. The build command must generate `.open-next/worker.js` before deployment can succeed.
+
 ### Build Errors
 
 If you encounter build errors:
 1. Ensure all dependencies are installed: `pnpm install`
 2. Check that environment variables are set correctly
 3. Verify `wrangler.jsonc` configuration is valid
+4. Make sure `@opennextjs/cloudflare` is installed: `pnpm add -D @opennextjs/cloudflare`
 
 ### Authentication Issues
 
