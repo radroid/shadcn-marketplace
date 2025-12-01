@@ -37,8 +37,8 @@
 	 * These must be available during the build process.
 	 */
 	"vars": {
-		"NEXT_PUBLIC_CONVEX_URL": "https://your-deployment.convex.cloud",
-		"NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_xxxxxxxxxxxx"
+		"NEXT_PUBLIC_CONVEX_URL": "https://wandering-emu-93.convex.cloud",
+		"NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuc2hhZGVkaXQuY3JlYXRlcGx1cy5jbHViJA"
 	},
 	/**
 	 * Secrets (sensitive data)
