@@ -32,11 +32,27 @@
 	/**
 	 * Environment Variables
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
+	 * 
+	 * Public variables (NEXT_PUBLIC_*) are embedded during build and exposed to the client.
+	 * These must be available during the build process.
 	 */
-	// "vars": { "MY_VARIABLE": "production_value" }
+	"vars": {
+		"NEXT_PUBLIC_CONVEX_URL": "https://your-deployment.convex.cloud",
+		"NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_xxxxxxxxxxxx"
+	},
 	/**
-	 * Note: Use secrets to store sensitive data.
+	 * Secrets (sensitive data)
 	 * https://developers.cloudflare.com/workers/configuration/secrets/
+	 * 
+	 * Set these via Wrangler CLI:
+	 *   pnpm wrangler secret put CLERK_SECRET_KEY
+	 *   pnpm wrangler secret put CLERK_JWT_ISSUER_DOMAIN
+	 * 
+	 * OR via Cloudflare Dashboard → Settings → Variables and Secrets
+	 * 
+	 * Required secrets:
+	 *   - CLERK_SECRET_KEY
+	 *   - CLERK_JWT_ISSUER_DOMAIN
 	 */
 	/**
 	 * Static Assets
