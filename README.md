@@ -84,7 +84,7 @@ This application is configured for **Cloudflare Workers** deployment using OpenN
 
 2. **Deploy to Cloudflare Workers**
    ```bash
-   pnpm deploy
+   pnpm run deploy
    ```
 
    Or preview locally first:

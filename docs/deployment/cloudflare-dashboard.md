@@ -14,7 +14,7 @@ In your Cloudflare Workers project settings:
 
 **Build Command:**
 ```bash
-pnpm install && pnpm deploy
+pnpm install && pnpm run deploy
 ```
 
 **OR:**
@@ -48,7 +48,7 @@ Set these in Cloudflare dashboard → Settings → Variables:
 ❌ **Wrong:** Build command = `pnpm install` and Deploy command = `npx wrangler deploy`
 - This will also fail - no OpenNext build step
 
-✅ **Correct:** Build command = `pnpm install && pnpm deploy`
+✅ **Correct:** Build command = `pnpm install && pnpm run deploy`
 - This runs the full OpenNext build and deploy process
 - Deploy command should be empty
 

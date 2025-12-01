@@ -37,7 +37,7 @@ This application is configured for **Cloudflare Workers** deployment using OpenN
 
    ```bash
    # Build and deploy to Cloudflare (runs build + deploy)
-   pnpm deploy
+   pnpm run deploy
 
    # Or build and preview locally first
    pnpm preview
@@ -52,7 +52,7 @@ This application is configured for **Cloudflare Workers** deployment using OpenN
 If deploying via Cloudflare dashboard, configure:
 
 **Build Settings:**
-- **Build command:** `pnpm install && pnpm deploy`
+- **Build command:** `pnpm install && pnpm run deploy`
 - **OR** `opennextjs-cloudflare build && opennextjs-cloudflare deploy`
 - **Build output directory:** (leave empty - not used for Workers)
 - **Root directory:** (leave empty)
@@ -61,7 +61,7 @@ If deploying via Cloudflare dashboard, configure:
 
 ## Available Commands
 
-- `pnpm deploy` - Build and deploy to Cloudflare Workers
+- `pnpm run deploy` - Build and deploy to Cloudflare Workers
 - `pnpm preview` - Build and preview locally with Wrangler
 - `pnpm upload` - Build and upload to Cloudflare (without deploying)
 - `pnpm cf-typegen` - Generate Cloudflare environment types
