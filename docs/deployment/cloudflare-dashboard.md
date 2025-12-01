@@ -29,15 +29,21 @@ opennextjs-cloudflare build && opennextjs-cloudflare deploy
 
 ### Environment Variables
 
-Set these in Cloudflare dashboard → Settings → Variables:
+⚠️ **IMPORTANT:** Environment variables must be set in two places:
 
-**Public Variables (vars):**
-- `NEXT_PUBLIC_CONVEX_URL`
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+**Build Variables** (Settings → Build & deployments → Environment variables):
+- `NEXT_PUBLIC_CONVEX_URL` - **Must be a BUILD variable**
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - **Must be a BUILD variable**
 
-**Secrets:**
-- `CLERK_SECRET_KEY` (set via dashboard or `wrangler secret put`)
-- `CLERK_JWT_ISSUER_DOMAIN` (set via dashboard or `wrangler secret put`)
+These are needed during the build process because they get embedded into the client bundle.
+
+**Runtime Variables** (Settings → Variables and Secrets):
+- `CLERK_SECRET_KEY` - Set as a **secret** (via dashboard or `wrangler secret put`)
+- `CLERK_JWT_ISSUER_DOMAIN` - Set as a **secret** (via dashboard or `wrangler secret put`)
+
+These are only needed when the Worker runs, not during build.
+
+📖 **See [Environment Variables Guide](environment-variables.md) for detailed explanation.**
 
 ### Common Mistakes
 
